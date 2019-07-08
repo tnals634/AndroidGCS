@@ -34,6 +34,10 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
+    //Add Dependency - ClientLib
+    implementation project(':ClientLib')
     // 네이버 지도 SDK
     implementation 'com.naver.maps:map-sdk:3.4.0'
+    compile project(path: ':ClientLib')
+    implementation 'com.android.support:cardview-v7:28.0.0'
 }
