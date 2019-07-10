@@ -1,10 +1,10 @@
 <resources>
     <string name="app_name">MyGCS</string>
-    <!--<string name="button_connect">Connect</string>-->
-    <!--<string name="button_disconnect">Disconnect</string>-->
+    <string name="button_connect">Connect</string>
+    <string name="button_disconnect">Disconnect</string>
 
-    <string-array name="drone_connection_types">
-        <item>USB</item>
-        <item>UDP</item>
-    </string-array>
+    <!--<string-array name="drone_connection_types">-->
+        <!--<item>USB</item>-->
+        <!--<item>UDP</item>-->
+    <!--</string-array>-->
 </resources>
