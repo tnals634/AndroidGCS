@@ -2,13 +2,11 @@ package com.example.mygcs;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.nfc.Tag;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
@@ -20,7 +18,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.naver.maps.map.MapFragment;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.ControlApi;

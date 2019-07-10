@@ -69,4 +69,8 @@
     <string name="label_tlog_title">Telemetry Log Files</string>
     <string name="tlog_selector_label">Telemetry Logs File Selector</string>
     <string name="loading_data">Loading data...</string>
+
+    <string name="channel_name">MyGCS Channel</string>
+    <string name="channel_description">MyGCS Desc</string>
+    <string name="CHANNEL_ID">com.example.mygcs</string>
 </resources>
