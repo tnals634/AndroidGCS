@@ -31,10 +31,10 @@ public class Gps implements DroneAttribute {
     public Gps() {  }
 
     public Gps(LatLong position, double gpsEph, int satCount, int fixType){
-        this.position = position;
-        this.gpsEph = gpsEph;
-        this.satCount = satCount;
-        this.fixType = fixType;
+            this.position = position;
+            this.gpsEph = gpsEph;
+            this.satCount = satCount;
+            this.fixType = fixType;
     }
 
     public Gps(double latitude, double longitude, double gpsEph, int satCount, int fixType){
