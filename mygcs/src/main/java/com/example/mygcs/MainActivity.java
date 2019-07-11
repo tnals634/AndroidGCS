@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             mNaverMapFragment = MapFragment.newInstance();
             fm.beginTransaction().add(R.id.map, mNaverMapFragment).commit();
         }
+
     }
 
     @Override
@@ -78,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 alertUser("Drone Connected");
                 updateConnectedButton(this.drone.isConnected());
                 //updateArmButton();
+                updateDronePosition();
                 break;
 
             case AttributeEvent.STATE_DISCONNECTED:
@@ -85,11 +87,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 updateConnectedButton(this.drone.isConnected());
                 //updateArmButton();
                 break;
-
             default:
                 // Log.i("DRONE_EVENT", event); //Uncomment to see events from the drone
                 break;
         }
+    }
+
+    public void updateDronePosition(){
+
+        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
+        LatLong vehiclePosition = droneGps.getPosition();
+        String st = vehiclePosition.toString();
+        Log.d("myCheck",st);
+        alertUser(st);
     }
 
     protected void updateConnectedButton(Boolean isConnected) {
