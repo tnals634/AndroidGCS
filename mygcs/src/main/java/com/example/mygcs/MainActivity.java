@@ -15,9 +15,11 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.MapFragment;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
+import com.naver.maps.map.overlay.Marker;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.VehicleApi;
@@ -236,6 +238,12 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition();
         Log.d("myCheck","111111111111" + vehiclePosition);
+
+        Marker marker = new Marker();
+        marker.setPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
+        marker.setWidth(50);
+        marker.setHeight(80);
+        marker.setMap(naverMap);
     }
 
     @Override
