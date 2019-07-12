@@ -16,12 +16,10 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
-import com.naver.maps.map.CameraPosition;
 import com.naver.maps.map.MapFragment;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
-import com.naver.maps.map.overlay.Marker;
-import com.naver.maps.map.util.MarkerIcons;
+import com.naver.maps.map.overlay.PolylineOverlay;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.VehicleApi;
@@ -39,6 +37,8 @@ import com.o3dr.services.android.lib.drone.property.VehicleMode;
 import com.o3dr.services.android.lib.gcs.link.LinkConnectionStatus;
 import com.o3dr.services.android.lib.model.AbstractCommandListener;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener, OnMapReadyCallback {
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private ControlTower controlTower;
     private int droneType = Type.TYPE_UNKNOWN;
     private final Handler handler = new Handler();
-    private int polyline;
+    private int polylineCheck = 0;
 
     private Spinner modeSelector;
     NaverMap naverMap;
@@ -242,16 +242,31 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         LatLong vehiclePosition = droneGps.getPosition( );
         Log.d("myCheck", "111111111111" + vehiclePosition);
 
-        Marker marker = new Marker();
-        marker.setPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
-        marker.setIcon(MarkerIcons.BLACK);
-        marker.setWidth(50);
-        marker.setHeight(80);
-        marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
+//        Marker marker = new Marker();
+//        marker.setPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
+//        marker.setIcon(MarkerIcons.BLACK);
+//        marker.setWidth(50);
+//        marker.setHeight(80);
+//        marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
 
-        CameraPosition cameraPosition =
-                new CameraPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()), 30,45,0);
-        naverMap.setCameraPosition(cameraPosition); //찍히는 좌표마다 카메라가 따라다님
+//        CameraPosition cameraPosition =
+//                new CameraPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()), 30,45,0);
+//        naverMap.setCameraPosition(cameraPosition); //찍히는 좌표마다 카메라가 따라다님
+
+        PolylineOverlay polyline = new PolylineOverlay();
+
+        LatLng[] polylineCount = new LatLng[polylineCheck + 1];
+        polylineCount[polylineCheck]=new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude());
+        for(int check = 0; check < polylineCheck+1; check++)
+        {
+            List<LatLng> coords = new ArrayList<>();
+            Collections.addAll(coords,
+                    polylineCount[check]
+            );
+            polyline.setCoords(coords);
+        }
+        polyline.setMap(naverMap);
+        polylineCheck++;
     }
 
     @Override
