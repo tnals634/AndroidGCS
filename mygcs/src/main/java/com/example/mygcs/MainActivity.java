@@ -16,10 +16,12 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
+import com.naver.maps.map.CameraPosition;
 import com.naver.maps.map.MapFragment;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.util.MarkerIcons;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.VehicleApi;
@@ -48,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private ControlTower controlTower;
     private int droneType = Type.TYPE_UNKNOWN;
     private final Handler handler = new Handler();
+    private int polyline;
 
     private Spinner modeSelector;
     NaverMap naverMap;
@@ -233,17 +236,22 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         this.modeSelector.setSelection(arrayAdapter.getPosition(vehicleMode));
     }
 
-    public void updateDronePosition(){
+    public void updateDronePosition() {
 
         Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
-        LatLong vehiclePosition = droneGps.getPosition();
-        Log.d("myCheck","111111111111" + vehiclePosition);
+        LatLong vehiclePosition = droneGps.getPosition( );
+        Log.d("myCheck", "111111111111" + vehiclePosition);
 
         Marker marker = new Marker();
         marker.setPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
+        marker.setIcon(MarkerIcons.BLACK);
         marker.setWidth(50);
         marker.setHeight(80);
-        marker.setMap(naverMap);
+        marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
+
+        CameraPosition cameraPosition =
+                new CameraPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()), 30,45,0);
+        naverMap.setCameraPosition(cameraPosition); //찍히는 좌표마다 카메라가 따라다님
     }
 
     @Override
