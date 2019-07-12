@@ -37,7 +37,7 @@ import com.o3dr.services.android.lib.model.AbstractCommandListener;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener {
+public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener, OnMapReadyCallback {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             }
         });
 
+        mNaverMapFragment.getMapAsync(this);
     }
 
     @Override
@@ -235,5 +236,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition();
         Log.d("myCheck","111111111111" + vehiclePosition);
+    }
+
+    @Override
+    public void onMapReady(@NonNull NaverMap naverMap) {
+        this.naverMap = naverMap;
     }
 }
