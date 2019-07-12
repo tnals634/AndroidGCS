@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="drone_type">
+        <item>Acro</item>
+        <item>Alt Hold</item>
+        <item>Auto</item>
+        <item>Auto Tune</item>
+        <item>Brake</item>
+        <item>Circle</item>
+        <item>Drift</item>
+        <item>Flip</item>
+        <item>FlowHold</item>
+        <item>Follow</item>
+        <item>Guided</item>
+        <item>Land</item>
+        <item>Loiter</item>
+        <item>PosHold</item>
+        <item>RTL</item>
+        <item>Simple/SuperSimple</item>
+        <item>SmartRTL</item>
+        <item>Stabilize</item>
+        <item>Sport</item>
+        <item>Throw</item>
+        <item>ZigZag</item>
+    </string-array>
+</resources>
