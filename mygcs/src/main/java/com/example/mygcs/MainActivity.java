@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
@@ -128,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 break;
 
             case AttributeEvent.GPS_POSITION:
-                updateDronePosition(marker);
+                updateDronePosition();
                 break;
 
             case AttributeEvent.TYPE_UPDATED:
@@ -239,11 +240,14 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         this.modeSelector.setSelection(arrayAdapter.getPosition(vehicleMode));
     }
 
-    public void updateDronePosition(Marker marker) {
+    public void updateDronePosition() {
 
         Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition( );
         Log.d("myCheck", "111111111111" + vehiclePosition);
+        Log.d("myCheck","123123123 " + droneGps.getSatellitesCount());
+        TextView textview = (TextView) findViewById(R.id.textView);
+        textview.setText("위성 : "+droneGps.getSatellitesCount());
 
         marker.setMap(null);//그 전 마커들 지워줌
         Attitude attitude = this.drone.getAttribute(AttributeType.ATTITUDE);
@@ -254,12 +258,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         marker.setWidth(50);
         marker.setHeight(50);
         marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
-        Log.d("myCheck","2222222222"+angle);
 
         CameraPosition cameraPosition =
                 new CameraPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()), 18,0,0);
         naverMap.setCameraPosition(cameraPosition); //찍히는 좌표마다 카메라가 따라다님
-
 
 
 //        PolylineOverlay polyline = new PolylineOverlay();
@@ -276,9 +278,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 //        }
 //        polyline.setMap(naverMap);
 //        polylineCheck++;
-
-
-
     }
 
     @Override
