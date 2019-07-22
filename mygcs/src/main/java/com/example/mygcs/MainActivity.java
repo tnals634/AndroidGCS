@@ -16,10 +16,12 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
+import com.naver.maps.map.CameraPosition;
 import com.naver.maps.map.MapFragment;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
-import com.naver.maps.map.overlay.PolylineOverlay;
+import com.naver.maps.map.overlay.Marker;
+import com.naver.maps.map.overlay.OverlayImage;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.VehicleApi;
@@ -30,6 +32,7 @@ import com.o3dr.services.android.lib.coordinate.LatLong;
 import com.o3dr.services.android.lib.drone.attribute.AttributeEvent;
 import com.o3dr.services.android.lib.drone.attribute.AttributeType;
 import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
+import com.o3dr.services.android.lib.drone.property.Attitude;
 import com.o3dr.services.android.lib.drone.property.Gps;
 import com.o3dr.services.android.lib.drone.property.State;
 import com.o3dr.services.android.lib.drone.property.Type;
@@ -37,8 +40,6 @@ import com.o3dr.services.android.lib.drone.property.VehicleMode;
 import com.o3dr.services.android.lib.gcs.link.LinkConnectionStatus;
 import com.o3dr.services.android.lib.model.AbstractCommandListener;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener, OnMapReadyCallback {
@@ -51,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private int droneType = Type.TYPE_UNKNOWN;
     private final Handler handler = new Handler();
     private int polylineCheck = 0;
+
+    Marker marker = new Marker();
 
     private Spinner modeSelector;
     NaverMap naverMap;
@@ -125,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 break;
 
             case AttributeEvent.GPS_POSITION:
-                updateDronePosition();
+                updateDronePosition(marker);
                 break;
 
             case AttributeEvent.TYPE_UPDATED:
@@ -236,37 +239,46 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         this.modeSelector.setSelection(arrayAdapter.getPosition(vehicleMode));
     }
 
-    public void updateDronePosition() {
+    public void updateDronePosition(Marker marker) {
 
         Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition( );
         Log.d("myCheck", "111111111111" + vehiclePosition);
 
-//        Marker marker = new Marker();
-//        marker.setPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
-//        marker.setIcon(MarkerIcons.BLACK);
-//        marker.setWidth(50);
-//        marker.setHeight(80);
-//        marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
+        marker.setMap(null);//그 전 마커들 지워줌
+        Attitude attitude = this.drone.getAttribute(AttributeType.ATTITUDE);
+        float angle = (float)attitude.getYaw();
+        marker.setPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
+        marker.setAngle(angle); // 드론을 돌리면 yaw값이 변경되며 마커 모양을 변경시켜줌
+        marker.setIcon(OverlayImage.fromResource(R.drawable.next_4));
+        marker.setWidth(50);
+        marker.setHeight(50);
+        marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
+        Log.d("myCheck","2222222222"+angle);
 
-//        CameraPosition cameraPosition =
-//                new CameraPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()), 30,45,0);
-//        naverMap.setCameraPosition(cameraPosition); //찍히는 좌표마다 카메라가 따라다님
+        CameraPosition cameraPosition =
+                new CameraPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()), 18,0,0);
+        naverMap.setCameraPosition(cameraPosition); //찍히는 좌표마다 카메라가 따라다님
 
-        PolylineOverlay polyline = new PolylineOverlay();
 
-        LatLng[] polylineCount = new LatLng[polylineCheck + 1];
-        polylineCount[polylineCheck]=new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude());
-        for(int check = 0; check < polylineCheck+1; check++)
-        {
-            List<LatLng> coords = new ArrayList<>();
-            Collections.addAll(coords,
-                    polylineCount[check]
-            );
-            polyline.setCoords(coords);
-        }
-        polyline.setMap(naverMap);
-        polylineCheck++;
+
+//        PolylineOverlay polyline = new PolylineOverlay();
+//
+//        LatLng[] polylineCount = new LatLng[polylineCheck + 1];
+//        polylineCount[polylineCheck] = new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude());
+//        for(int check = 0; check < polylineCheck + 1; check++)
+//        {
+//            List<LatLng> coords = new ArrayList<>();
+//            Collections.addAll(coords,
+//                    polylineCount[check]
+//            );
+//            polyline.setCoords(coords);
+//        }
+//        polyline.setMap(naverMap);
+//        polylineCheck++;
+
+
+
     }
 
     @Override
