@@ -2,7 +2,11 @@
     <string name="app_name">MyGCS</string>
     <string name="button_connect">Connect</string>
     <string name="button_disconnect">Disconnect</string>
-    <string name="textView">Satellite</string>
+    <string name="textView">위성</string>
+    <string name="Voltage">전압</string>
+    <string name="Altitude">고도</string>
+    <string name="Speed">속도</string>
+    <string name="Yaw">YAW</string>
 
     <!--<string-array name="drone_connection_types">-->
         <!--<item>USB</item>-->

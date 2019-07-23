@@ -2,6 +2,7 @@ package com.example.mygcs;
 
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -9,20 +10,22 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
-import com.naver.maps.map.CameraPosition;
+import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.MapFragment;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
+import com.naver.maps.map.UiSettings;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
+import com.naver.maps.map.overlay.PolylineOverlay;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.VehicleApi;
@@ -33,14 +36,18 @@ import com.o3dr.services.android.lib.coordinate.LatLong;
 import com.o3dr.services.android.lib.drone.attribute.AttributeEvent;
 import com.o3dr.services.android.lib.drone.attribute.AttributeType;
 import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
+import com.o3dr.services.android.lib.drone.property.Altitude;
 import com.o3dr.services.android.lib.drone.property.Attitude;
+import com.o3dr.services.android.lib.drone.property.Battery;
 import com.o3dr.services.android.lib.drone.property.Gps;
+import com.o3dr.services.android.lib.drone.property.Speed;
 import com.o3dr.services.android.lib.drone.property.State;
 import com.o3dr.services.android.lib.drone.property.Type;
 import com.o3dr.services.android.lib.drone.property.VehicleMode;
 import com.o3dr.services.android.lib.gcs.link.LinkConnectionStatus;
 import com.o3dr.services.android.lib.model.AbstractCommandListener;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener, OnMapReadyCallback {
@@ -63,6 +70,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "Start mainActivity");
         super.onCreate(savedInstanceState);
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
+                WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+
         setContentView(R.layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 
@@ -81,6 +95,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         this.modeSelector.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                ((TextView)parent.getChildAt(0)).setTextColor(Color.WHITE);
                 onFlightModeSelected(view);
             }
 
@@ -105,7 +120,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         super.onStop();
         if (this.drone.isConnected()) {
             this.drone.disconnect();
-            updateConnectedButton(false);
         }
 
         this.controlTower.unregisterDrone(this.drone);
@@ -117,15 +131,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         switch (event) {
             case AttributeEvent.STATE_CONNECTED:
                 alertUser("Drone Connected");
-                updateConnectedButton(this.drone.isConnected());
                 //updateArmButton();
 
-                break;
-
-            case AttributeEvent.STATE_DISCONNECTED:
-                alertUser("Drone Disconnected");
-                updateConnectedButton(this.drone.isConnected());
-                //updateArmButton();
                 break;
 
             case AttributeEvent.GPS_POSITION:
@@ -140,33 +147,50 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 }
                 break;
 
+            case AttributeEvent.ALTITUDE_UPDATED:
+                updateAltitude();
+                break;
+
+            case AttributeEvent.BATTERY_UPDATED:
+                updateBattery();
+                break;
+
             case AttributeEvent.STATE_VEHICLE_MODE:
                 updateVehicleMode();
                 break;
 
+            case AttributeEvent.SPEED_UPDATED:
+                updateSpeed();
+                break;
             default:
                 // Log.i("DRONE_EVENT", event); //Uncomment to see events from the drone
                 break;
         }
     }
 
-    protected void updateConnectedButton(Boolean isConnected) {
-        Button connectButton = (Button) findViewById(R.id.btnConnect);
-        if (isConnected) {
-            connectButton.setText(getText(R.string.button_disconnect));
-        } else {
-            connectButton.setText(getText(R.string.button_connect));
-        }
+    private void updateSpeed() {
+
+        Speed speed = this.drone.getAttribute(AttributeType.SPEED);
+        TextView droneSpeed = (TextView) findViewById(R.id.speed);
+        droneSpeed.setText("속도 " + Math.round(speed.getAirSpeed())+"m/s");
+        Log.d("myCheck","속도  " + Math.round(speed.getAirSpeed())+"m/s");
+
     }
 
-    public void onBtnConnectTap(View view) {
-        if (this.drone.isConnected()) {
-            this.drone.disconnect();
-        } else {
-            ConnectionParameter params = ConnectionParameter.newUdpConnection(null);
-            this.drone.connect(params);
-        }
+    private void updateBattery() {
+
+        Battery battery = this.drone.getAttribute(AttributeType.BATTERY);
+        TextView droneBattery = (TextView)findViewById(R.id.voltage);
+        String strBattery = String.format("%.1f",battery.getBatteryVoltage());
+        droneBattery.setText("전압 " + strBattery +"v");
+        Log.d("myCheck","배터리1 " + strBattery);
+
     }
+
+//    public void onBtnConnectTap(View view) {
+//        ConnectionParameter params = ConnectionParameter.newUdpConnection(null);
+//        this.drone.connect(params);
+//    }
 
     @Override
     public void onDroneServiceInterrupted(String errorMsg) {
@@ -240,48 +264,70 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         this.modeSelector.setSelection(arrayAdapter.getPosition(vehicleMode));
     }
 
+    public void updateAltitude(){
+
+        Altitude altitude = this.drone.getAttribute(AttributeType.ALTITUDE);
+        TextView droneAltitude = (TextView) findViewById(R.id.altitude);
+        droneAltitude.setText("고도 " + Math.round(altitude.getTargetAltitude())+"m");
+        Log.d("myCheck","고도1 " + Math.round(altitude.getAltitude())+"m");
+        Log.d("myCheck","고도2 " + Math.round(altitude.getTargetAltitude())+"m");
+    }
+
     public void updateDronePosition() {
 
         Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition( );
-        Log.d("myCheck", "111111111111" + vehiclePosition);
-        Log.d("myCheck","123123123 " + droneGps.getSatellitesCount());
+        Log.d("myCheck", "드론 위치 : " + vehiclePosition);
+        Log.d("myCheck","위성갯수 : " + droneGps.getSatellitesCount());
         TextView textview = (TextView) findViewById(R.id.textView);
-        textview.setText("위성 : "+droneGps.getSatellitesCount());
+        textview.setText("위성 "+ droneGps.getSatellitesCount());
+
+        Attitude attitude = this.drone.getAttribute(AttributeType.ATTITUDE);
+        TextView droneYaw = (TextView)findViewById(R.id.yaw);
+        float angle = (float)attitude.getYaw();
+        droneYaw.setText("Yaw " + Math.round(angle)+"deg");
+        Log.d("myCheck","YAW : " + Math.round(angle));
+
 
         marker.setMap(null);//그 전 마커들 지워줌
-        Attitude attitude = this.drone.getAttribute(AttributeType.ATTITUDE);
-        float angle = (float)attitude.getYaw();
         marker.setPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
         marker.setAngle(angle); // 드론을 돌리면 yaw값이 변경되며 마커 모양을 변경시켜줌
-        marker.setIcon(OverlayImage.fromResource(R.drawable.next_4));
-        marker.setWidth(50);
-        marker.setHeight(50);
+        marker.setIcon(OverlayImage.fromResource(R.drawable.next_5));
+        marker.setWidth(80);
+        marker.setHeight(80);
         marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
 
-        CameraPosition cameraPosition =
-                new CameraPosition(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()), 18,0,0);
-        naverMap.setCameraPosition(cameraPosition); //찍히는 좌표마다 카메라가 따라다님
+        CameraUpdate cameraupdate = CameraUpdate.scrollTo(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
+        naverMap.moveCamera(cameraupdate); //찍히는 좌표마다 카메라가 따라다님
 
+        PolylineOverlay  polylineOverlay = new PolylineOverlay();
+        LatLng[] polyline = new LatLng[500];
+        polyline[polylineCheck] = new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude());
+        polylineCheck++;
 
-//        PolylineOverlay polyline = new PolylineOverlay();
-//
-//        LatLng[] polylineCount = new LatLng[polylineCheck + 1];
-//        polylineCount[polylineCheck] = new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude());
-//        for(int check = 0; check < polylineCheck + 1; check++)
-//        {
-//            List<LatLng> coords = new ArrayList<>();
-//            Collections.addAll(coords,
-//                    polylineCount[check]
-//            );
-//            polyline.setCoords(coords);
-//        }
-//        polyline.setMap(naverMap);
-//        polylineCheck++;
+        for(int i=0;i<polylineCheck;i++)
+        {
+            if(polylineCheck>=500)
+            {
+                polylineCheck = 0;
+            }
+            else
+            {
+                polylineOverlay.setCoords(Arrays.asList(
+                        polyline[i]
+                ));
+            }
+            polylineOverlay.setMap(naverMap);
+        }
     }
 
     @Override
     public void onMapReady(@NonNull NaverMap naverMap) {
+        ConnectionParameter params = ConnectionParameter.newUdpConnection(null);
+        this.drone.connect(params);
         this.naverMap = naverMap;
+        this.naverMap.setMapType(NaverMap.MapType.Satellite);
+        UiSettings uiSettings = naverMap.getUiSettings();
+        uiSettings.setZoomControlEnabled(false);
     }
 }
