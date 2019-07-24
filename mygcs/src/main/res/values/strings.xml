@@ -7,6 +7,16 @@
     <string name="Altitude">고도</string>
     <string name="Speed">속도</string>
     <string name="Yaw">YAW</string>
+    <string name="Arm">ARM</string>
+    <string name="TakeOff">TAKE-OFF</string>
+    <string name="Land">LAND</string>
+    <string name="map_lock">맵잠금</string>
+    <string name="map_basic">일반지도</string>
+    <string name="map_terrain">지형도</string>
+    <string name="map_satellite">위성지도</string>
+    <string name="map_type">일반지도</string>
+    <string name="intellectual_map">지적도off</string>
+    <string name="clear">CLEAR</string>
 
     <!--<string-array name="drone_connection_types">-->
         <!--<item>USB</item>-->

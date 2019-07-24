@@ -7,8 +7,13 @@
     tools:context=".MainActivity">
 
     <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:id="@+id/frameLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <FrameLayout
             android:id="@+id/map"
@@ -18,90 +23,253 @@
         </FrameLayout>
 
         <LinearLayout
-            android:layout_width="998dp"
+            android:layout_width="match_parent"
             android:layout_height="30dp"
-            android:background="#A62E2D2D">
-
-
-            <TextView
-                android:id="@+id/voltage"
-                android:layout_width="600dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:paddingTop="1dp"
-                android:text="@string/Voltage"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="587dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:paddingTop="1dp"
-                android:text="비행모드"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
-
-            <Spinner
-                android:id="@+id/spinner"
-                android:layout_width="149dp"
-                android:layout_height="match_parent"
-                android:layout_column="1"
-                android:clickable="true"
-                android:dropDownWidth="wrap_content"
-                android:spinnerMode="dropdown"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-            <TextView
-                android:id="@+id/altitude"
-                android:layout_width="600dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:paddingTop="1dp"
-                android:text="@string/Altitude"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/speed"
-                android:layout_width="600dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:paddingTop="1dp"
-                android:text="@string/Speed"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/yaw"
-                android:layout_width="600dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:paddingTop="1dp"
-                android:text="@string/Yaw"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp" />
-
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="131dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="208dp"
-                android:paddingTop="1dp"
-                android:text="@string/textView"
-                android:textAlignment="center"
-                android:textColor="#FFFFFF"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                app:layout_constraintBaseline_toBaselineOf="@+id/spinner" />
+            android:background="#A62E2D2D"
+            android:fadeScrollbars="true">
 
         </LinearLayout>
 
     </FrameLayout>
+
+
+    <TextView
+        android:id="@+id/voltage"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="146dp"
+        android:layout_weight="1"
+        android:paddingTop="1dp"
+        android:text="@string/Voltage"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/textView3"
+        app:layout_constraintEnd_toEndOf="@+id/textView3"
+        app:layout_constraintEnd_toStartOf="@+id/spinner"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="150dp"
+        android:layout_height="30dp"
+        android:layout_marginBottom="317dp"
+        android:layout_weight="1"
+        android:paddingTop="1dp"
+        android:text="비행모드"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonTakeoff"
+        app:layout_constraintEnd_toStartOf="@+id/textView"
+        app:layout_constraintHorizontal_bias="0.161"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="150dp"
+        android:layout_height="0dp"
+        android:layout_column="1"
+        android:layout_marginEnd="350dp"
+        android:layout_marginBottom="315dp"
+        android:clickable="true"
+        android:dropDownWidth="wrap_content"
+        android:spinnerMode="dropdown"
+        app:layout_constraintBottom_toTopOf="@+id/lock"
+        app:layout_constraintEnd_toStartOf="@+id/textView"
+        app:layout_constraintStart_toEndOf="@+id/voltage"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/altitude"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="18dp"
+        android:layout_weight="1"
+        android:paddingTop="1dp"
+        android:text="@string/Altitude"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/voltage"
+        app:layout_constraintEnd_toEndOf="@+id/speed"
+        app:layout_constraintHorizontal_bias="0.828"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/speed"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="496dp"
+        android:layout_weight="1"
+        android:paddingTop="1dp"
+        android:text="@string/Speed"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintBaseline_toBaselineOf="@+id/voltage"
+        app:layout_constraintStart_toStartOf="@+id/frameLayout" />
+
+    <TextView
+        android:id="@+id/yaw"
+        android:layout_width="150dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="596dp"
+        android:layout_marginBottom="315dp"
+        android:layout_weight="1"
+        android:paddingTop="1dp"
+        android:text="@string/Yaw"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toTopOf="@+id/intellectual_map"
+        app:layout_constraintStart_toStartOf="@+id/frameLayout"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
+        android:paddingTop="1dp"
+        android:text="@string/textView"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintBaseline_toBaselineOf="@+id/yaw"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/spinner" />
+
+    <Button
+        android:id="@+id/buttonTakeoff"
+        style="@style/button_style"
+        android:layout_width="80dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginBottom="16dp"
+        android:autoText="false"
+        android:background="@drawable/round_button_arm"
+        android:includeFontPadding="true"
+        android:outlineProvider="paddedBounds"
+        android:padding="10dp"
+        android:text="@string/Arm"
+        android:textAlignment="center"
+        android:textColor="#FFFFFF"
+        android:textIsSelectable="false"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/lock"
+        style="@style/button_style"
+        android:layout_width="80dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/round_button_arm"
+        android:outlineProvider="paddedBounds"
+        android:text="@string/map_lock"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+
+    <Button
+        android:id="@+id/map_type"
+        style="@style/button_style"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/round_button_arm"
+        android:outlineProvider="paddedBounds"
+        android:text="@string/map_type"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/lock" />
+
+    <Button
+        android:id="@+id/basic_map"
+        style="@style/button_style"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/round_button"
+        android:outlineProvider="paddedBounds"
+        android:text="@string/map_basic"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/map_type"
+        app:layout_constraintStart_toEndOf="@+id/lock" />
+
+    <Button
+        android:id="@+id/terrain_map"
+        style="@style/button_style"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/round_button"
+        android:outlineProvider="paddedBounds"
+        android:text="@string/map_terrain"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/basic_map"
+        app:layout_constraintStart_toEndOf="@+id/lock" />
+
+    <Button
+        android:id="@+id/satellite_map"
+        style="@style/button_style"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/round_button"
+        android:outlineProvider="paddedBounds"
+        android:text="@string/map_satellite"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/terrain_map"
+        app:layout_constraintStart_toEndOf="@+id/lock" />
+
+    <Button
+        android:id="@+id/intellectual_map"
+        style="@style/button_style"
+        android:layout_width="120dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="150dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/round_button_arm"
+        android:outlineProvider="paddedBounds"
+        android:text="@string/intellectual_map"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.259"
+        app:layout_constraintStart_toEndOf="@+id/map_type"
+        app:layout_constraintTop_toBottomOf="@+id/yaw" />
+
+    <Button
+        android:id="@+id/map_clear"
+        style="@style/button_style"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/round_button"
+        android:text="@string/clear"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </android.support.constraint.ConstraintLayout>

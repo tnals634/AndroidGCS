@@ -10,9 +10,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,11 +71,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Log.i(TAG, "Start mainActivity");
         super.onCreate(savedInstanceState);
 
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
-                WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        hidNavigationBar();
 
         setContentView(R.layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
@@ -104,8 +100,43 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 // Do nothing
             }
         });
-
         mNaverMapFragment.getMapAsync(this);
+    }
+
+    private void hidNavigationBar(){
+        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
+        int newUiOptions = uiOptions;
+        boolean isImmersiveModeEnabled =
+                ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
+        if(isImmersiveModeEnabled){
+            Log.d(TAG,"Turning immersive mode mode off.");
+        }else {
+            Log.d(TAG, "Turning immersive mode mode on.");
+        }
+        newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        newUiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        newUiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
+
+    }
+
+    protected void updateArmButton(){
+        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+        Button armButton = (Button)findViewById(R.id.buttonTakeoff);
+
+        if(!this.drone.isConnected()){
+            armButton.setVisibility(View.INVISIBLE);
+        }else {
+            armButton.setVisibility(View.VISIBLE);
+        }
+
+        if(vehicleState.isFlying()){
+            armButton.setText("LAND");
+        } else if(vehicleState.isArmed()){
+            armButton.setText("TAKE_OFF");
+        } else if(vehicleState.isConnected()){
+            armButton.setText("ARM");
+        }
     }
 
     @Override
@@ -132,7 +163,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             case AttributeEvent.STATE_CONNECTED:
                 alertUser("Drone Connected");
                 //updateArmButton();
-
                 break;
 
             case AttributeEvent.GPS_POSITION:
@@ -162,6 +192,11 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             case AttributeEvent.SPEED_UPDATED:
                 updateSpeed();
                 break;
+
+            case AttributeEvent.STATE_ARMING:
+                updateArmButton();
+                break;
+
             default:
                 // Log.i("DRONE_EVENT", event); //Uncomment to see events from the drone
                 break;
@@ -186,11 +221,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Log.d("myCheck","배터리1 " + strBattery);
 
     }
-
-//    public void onBtnConnectTap(View view) {
-//        ConnectionParameter params = ConnectionParameter.newUdpConnection(null);
-//        this.drone.connect(params);
-//    }
 
     @Override
     public void onDroneServiceInterrupted(String errorMsg) {
@@ -269,7 +299,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Altitude altitude = this.drone.getAttribute(AttributeType.ALTITUDE);
         TextView droneAltitude = (TextView) findViewById(R.id.altitude);
         droneAltitude.setText("고도 " + Math.round(altitude.getTargetAltitude())+"m");
-        Log.d("myCheck","고도1 " + Math.round(altitude.getAltitude())+"m");
         Log.d("myCheck","고도2 " + Math.round(altitude.getTargetAltitude())+"m");
     }
 
@@ -326,8 +355,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         ConnectionParameter params = ConnectionParameter.newUdpConnection(null);
         this.drone.connect(params);
         this.naverMap = naverMap;
-        this.naverMap.setMapType(NaverMap.MapType.Satellite);
         UiSettings uiSettings = naverMap.getUiSettings();
         uiSettings.setZoomControlEnabled(false);
+        uiSettings.setLogoMargin(16,500,1200,3);
+        uiSettings.setScaleBarEnabled(false);
     }
 }
