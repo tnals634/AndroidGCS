@@ -222,6 +222,16 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     mapBasic.setVisibility(v.VISIBLE);
                     mapTerrain.setVisibility(v.VISIBLE);
                     mapSatellite.setVisibility(v.VISIBLE);
+
+                    if(mapType.getText() == mapBasic.getText()) {
+                        mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
+                    }
+                    else if(mapType.getText() == mapTerrain.getText()){
+                        mapTerrain.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
+                    }
+                    else if(mapType.getText() == mapSatellite.getText()){
+                        mapSatellite.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
+                    }
                 }
             }
         });
@@ -272,6 +282,118 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     mapSatellite.setVisibility(v.GONE);
 
                 }
+            }
+        });
+    }
+
+    public void updateMapLock(final LatLng latLng){
+
+        final Button mapLocking = (Button) findViewById(R.id.locking);
+        final Button mapLock = (Button) findViewById(R.id.lock);
+        final Button mapUnlock = (Button) findViewById(R.id.unlock);
+
+        mapLocking.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(v.getId() == R.id.locking){
+                    mapLock.setVisibility(v.VISIBLE);
+                    mapUnlock.setVisibility(v.VISIBLE);
+
+                    if(mapLocking.getText() == mapLock.getText()){
+                        mapLock.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    }
+                    else if(mapLocking.getText() == mapUnlock.getText()){
+                        mapUnlock.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    }
+                }
+            }
+        });
+        mapLock.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(v.getId() == R.id.lock){
+                    mapLocking.setText("맵잠금");
+                    CameraUpdate cameraupdate = CameraUpdate.scrollTo(latLng);
+                    naverMap.moveCamera(cameraupdate); //찍히는 좌표마다 카메라가 따라다님
+                    mapLock.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    mapUnlock.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button));
+                    mapLock.setVisibility(v.GONE);
+                    mapUnlock.setVisibility(v.GONE);
+                }
+            }
+        });
+
+        mapUnlock.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(v.getId() == R.id.unlock){
+                    mapLocking.setText("맵이동");
+                    mapLock.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button));
+                    mapUnlock.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    mapLock.setVisibility(v.GONE);
+                    mapUnlock.setVisibility(v.GONE);
+                }
+            }
+        });
+    }
+
+    public void updateIntellectualMap(){
+
+        final Button map_on= (Button) findViewById(R.id.intellectual_map_on);
+        final Button map_off = (Button) findViewById(R.id.intellectual_map_off);
+        final Button map_check = (Button) findViewById(R.id.intellectual_map);
+
+        map_check.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(v.getId() == R.id.intellectual_map){
+                    map_on.setVisibility(v.VISIBLE);
+                    map_off.setVisibility(v.VISIBLE);
+                    if(map_check.getText() == map_off.getText()){
+                        map_off.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    }
+                    else if(map_check.getText() == map_on.getText()){
+                        map_on.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    }
+                }
+            }
+        });
+        map_on.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(v.getId() == R.id.intellectual_map_on){
+                    map_check.setText("지적도on");
+                    naverMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, true);
+                    map_on.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    map_off.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button));
+                    map_on.setVisibility(v.GONE);
+                    map_off.setVisibility(v.GONE);
+                }
+            }
+        });
+
+        map_off.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(v.getId() == R.id.intellectual_map_off){
+                    map_check.setText("지적도off");
+                    naverMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, false);
+                    map_on.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button));
+                    map_off.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    map_on.setVisibility(v.GONE);
+                    map_off.setVisibility(v.GONE);
+                }
+            }
+        });
+    }
+
+    public void updateClearButton(final PolylineOverlay polyline){
+        Button clearBtn = (Button)findViewById(R.id.map_clear);
+
+        clearBtn.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                polyline.setMap(null);
             }
         });
     }
@@ -399,8 +521,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         marker.setHeight(80);
         marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
 
-        CameraUpdate cameraupdate = CameraUpdate.scrollTo(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
-        naverMap.moveCamera(cameraupdate); //찍히는 좌표마다 카메라가 따라다님
+        updateMapLock(new LatLng(vehiclePosition.getLatitude(),vehiclePosition.getLongitude()));
 
         PolylineOverlay  polylineOverlay = new PolylineOverlay();
         LatLng[] polyline = new LatLng[500];
@@ -421,6 +542,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             }
             polylineOverlay.setMap(naverMap);
         }
+
+        updateClearButton(polylineOverlay);
     }
 
     @Override
@@ -433,5 +556,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         uiSettings.setLogoMargin(16,500,1200,3);
         uiSettings.setScaleBarEnabled(false);
         updateMapTypeButton();
+        updateIntellectualMap();
     }
 }
