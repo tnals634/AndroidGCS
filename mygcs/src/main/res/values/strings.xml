@@ -10,7 +10,9 @@
     <string name="Arm">ARM</string>
     <string name="TakeOff">TAKE-OFF</string>
     <string name="Land">LAND</string>
+    <string name="map_locking">맵잠금</string>
     <string name="map_lock">맵잠금</string>
+    <string name="map_unlock">맵이동</string>
     <string name="map_basic">일반지도</string>
     <string name="map_terrain">지형도</string>
     <string name="map_satellite">위성지도</string>

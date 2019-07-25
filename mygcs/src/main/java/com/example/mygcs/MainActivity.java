@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -66,6 +67,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private Spinner modeSelector;
     NaverMap naverMap;
 
+
+    Context context = this;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "Start mainActivity");
@@ -100,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 // Do nothing
             }
         });
+
         mNaverMapFragment.getMapAsync(this);
     }
 
@@ -163,6 +168,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             case AttributeEvent.STATE_CONNECTED:
                 alertUser("Drone Connected");
                 //updateArmButton();
+                updateMapTypeButton();
                 break;
 
             case AttributeEvent.GPS_POSITION:
@@ -201,6 +207,73 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 // Log.i("DRONE_EVENT", event); //Uncomment to see events from the drone
                 break;
         }
+    }
+
+    public void updateMapTypeButton(){
+        final Button mapType = (Button) findViewById(R.id.map_type);
+        final Button mapBasic = (Button) findViewById(R.id.basic_map);
+        final Button mapTerrain = (Button) findViewById(R.id.terrain_map);
+        final Button mapSatellite = (Button) findViewById(R.id.satellite_map);
+        mapType.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+
+                if(v.getId() == R.id.map_type){
+                    mapBasic.setVisibility(v.VISIBLE);
+                    mapTerrain.setVisibility(v.VISIBLE);
+                    mapSatellite.setVisibility(v.VISIBLE);
+                }
+            }
+        });
+        mapBasic.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+
+                if(v.getId() == R.id.basic_map){
+                    mapType.setText("일반지도");
+                    naverMap.setMapType(NaverMap.MapType.Basic);
+                    mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
+                    mapTerrain.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button));
+                    mapSatellite.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button));
+                    mapBasic.setVisibility(v.GONE);
+                    mapTerrain.setVisibility(v.GONE);
+                    mapSatellite.setVisibility(v.GONE);
+                }
+            }
+        });
+        mapTerrain.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if(v.getId() == R.id.terrain_map){
+                    mapType.setText("지형도");
+                    naverMap.setMapType(NaverMap.MapType.Terrain);
+                    mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
+                    mapTerrain.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    mapSatellite.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button));
+                    mapBasic.setVisibility(v.GONE);
+                    mapTerrain.setVisibility(v.GONE);
+                    mapSatellite.setVisibility(v.GONE);
+
+                }
+            }
+        });
+        mapSatellite.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                if (v.getId( ) == R.id.satellite_map) {
+
+                    mapType.setText("위성지도");
+                    naverMap.setMapType(NaverMap.MapType.Satellite);
+                    mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
+                    mapTerrain.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button));
+                    mapSatellite.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
+                    mapBasic.setVisibility(v.GONE);
+                    mapTerrain.setVisibility(v.GONE);
+                    mapSatellite.setVisibility(v.GONE);
+
+                }
+            }
+        });
     }
 
     private void updateSpeed() {
@@ -359,5 +432,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         uiSettings.setZoomControlEnabled(false);
         uiSettings.setLogoMargin(16,500,1200,3);
         uiSettings.setScaleBarEnabled(false);
+        updateMapTypeButton();
     }
 }
