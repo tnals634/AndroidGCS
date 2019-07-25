@@ -126,22 +126,22 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
     protected void updateArmButton(){
-        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
-        Button armButton = (Button)findViewById(R.id.buttonTakeoff);
+        final State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+        final Button armButton = (Button)findViewById(R.id.buttonTakeoff);
 
-        if(!this.drone.isConnected()){
-            armButton.setVisibility(View.INVISIBLE);
-        }else {
-            armButton.setVisibility(View.VISIBLE);
-        }
+        armButton.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v){
 
-        if(vehicleState.isFlying()){
-            armButton.setText("LAND");
-        } else if(vehicleState.isArmed()){
-            armButton.setText("TAKE_OFF");
-        } else if(vehicleState.isConnected()){
-            armButton.setText("ARM");
-        }
+                if(vehicleState.isFlying()){
+                    armButton.setText("LAND");
+                } else if(vehicleState.isArmed()){
+                    armButton.setText("TAKE_OFF");
+                } else if(vehicleState.isConnected()){
+                    armButton.setText("ARM");
+                }
+            }
+        });
     }
 
     @Override
@@ -214,6 +214,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         final Button mapBasic = (Button) findViewById(R.id.basic_map);
         final Button mapTerrain = (Button) findViewById(R.id.terrain_map);
         final Button mapSatellite = (Button) findViewById(R.id.satellite_map);
+
+        final Button map_on= (Button) findViewById(R.id.intellectual_map_on);
+        final Button map_off = (Button) findViewById(R.id.intellectual_map_off);
+
+        final Button mapLock = (Button) findViewById(R.id.lock);
+        final Button mapUnlock = (Button) findViewById(R.id.unlock);
+
         mapType.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v){
@@ -222,6 +229,12 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     mapBasic.setVisibility(v.VISIBLE);
                     mapTerrain.setVisibility(v.VISIBLE);
                     mapSatellite.setVisibility(v.VISIBLE);
+
+                    map_on.setVisibility(v.GONE);
+                    map_off.setVisibility(v.GONE);
+
+                    mapLock.setVisibility(v.GONE);
+                    mapUnlock.setVisibility(v.GONE);
 
                     if(mapType.getText() == mapBasic.getText()) {
                         mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
@@ -292,12 +305,26 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         final Button mapLock = (Button) findViewById(R.id.lock);
         final Button mapUnlock = (Button) findViewById(R.id.unlock);
 
+        final Button mapBasic = (Button) findViewById(R.id.basic_map);
+        final Button mapTerrain = (Button) findViewById(R.id.terrain_map);
+        final Button mapSatellite = (Button) findViewById(R.id.satellite_map);
+
+        final Button map_on= (Button) findViewById(R.id.intellectual_map_on);
+        final Button map_off = (Button) findViewById(R.id.intellectual_map_off);
+
         mapLocking.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v){
                 if(v.getId() == R.id.locking){
                     mapLock.setVisibility(v.VISIBLE);
                     mapUnlock.setVisibility(v.VISIBLE);
+
+                    mapBasic.setVisibility(v.GONE);
+                    mapTerrain.setVisibility(v.GONE);
+                    mapSatellite.setVisibility(v.GONE);
+
+                    map_on.setVisibility(v.GONE);
+                    map_off.setVisibility(v.GONE);
 
                     if(mapLocking.getText() == mapLock.getText()){
                         mapLock.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
@@ -343,12 +370,28 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         final Button map_off = (Button) findViewById(R.id.intellectual_map_off);
         final Button map_check = (Button) findViewById(R.id.intellectual_map);
 
+        final Button mapLock = (Button) findViewById(R.id.lock);
+        final Button mapUnlock = (Button) findViewById(R.id.unlock);
+
+        final Button mapBasic = (Button) findViewById(R.id.basic_map);
+        final Button mapTerrain = (Button) findViewById(R.id.terrain_map);
+        final Button mapSatellite = (Button) findViewById(R.id.satellite_map);
+
         map_check.setOnClickListener(new Button.OnClickListener(){
             @Override
             public void onClick(View v){
                 if(v.getId() == R.id.intellectual_map){
                     map_on.setVisibility(v.VISIBLE);
                     map_off.setVisibility(v.VISIBLE);
+
+                    mapBasic.setVisibility(v.GONE);
+                    mapTerrain.setVisibility(v.GONE);
+                    mapSatellite.setVisibility(v.GONE);
+
+
+                    mapLock.setVisibility(v.GONE);
+                    mapUnlock.setVisibility(v.GONE);
+
                     if(map_check.getText() == map_off.getText()){
                         map_off.setBackground(ContextCompat.getDrawable(context,R.drawable.round_button_arm));
                     }
@@ -557,5 +600,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         uiSettings.setScaleBarEnabled(false);
         updateMapTypeButton();
         updateIntellectualMap();
+        updateMapLock(new LatLng(37.5670135, 126.9783740));
     }
 }
