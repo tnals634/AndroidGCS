@@ -157,6 +157,7 @@
         android:textColor="#FFFFFF"
         android:textIsSelectable="false"
         android:textSize="14sp"
+        android:onClick="onArmButtonTap"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -170,7 +171,7 @@
         android:text="@string/map_lock"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@+id/locking"
         app:layout_constraintTop_toBottomOf="@+id/unlock" />
@@ -186,7 +187,7 @@
         android:text="@string/map_unlock"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/lock"
         app:layout_constraintStart_toStartOf="@+id/locking"
         app:layout_constraintTop_toBottomOf="@+id/spinner" />
@@ -234,7 +235,7 @@
         android:text="@string/map_basic"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/map_type"
         app:layout_constraintStart_toStartOf="@+id/map_type" />
 
@@ -249,7 +250,7 @@
         android:text="@string/map_terrain"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/basic_map"
         app:layout_constraintStart_toStartOf="@+id/map_type" />
 
@@ -264,7 +265,7 @@
         android:text="@string/map_satellite"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/terrain_map"
         app:layout_constraintStart_toStartOf="@+id/map_type" />
 
@@ -300,7 +301,7 @@
         android:text="@string/intellectual_map_off"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/intellectual_map"
@@ -320,7 +321,7 @@
         android:text="@string/intellectual_map_on"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
-        android:visibility="gone"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/intellectual_map"
@@ -334,7 +335,7 @@
         android:layout_height="50dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"
-        android:background="@drawable/round_button"
+        android:background="@drawable/round_button_arm"
         android:text="@string/clear"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
