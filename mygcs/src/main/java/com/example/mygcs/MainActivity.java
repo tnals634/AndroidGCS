@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             });
         } else if (vehicleState.isArmed()) {
             // Take off
-            ControlApi.getApi(this.drone).takeoff(5, new AbstractCommandListener() {
+            ControlApi.getApi(this.drone).takeoff(3, new AbstractCommandListener() {
 
                 @Override
                 public void onSuccess() {
@@ -497,7 +497,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Speed speed = this.drone.getAttribute(AttributeType.SPEED);
         TextView droneSpeed = (TextView) findViewById(R.id.speed);
         droneSpeed.setText("속도 " + Math.round(speed.getGroundSpeed()) + "m/s");
-        Log.d("myCheck", "속도  " + Math.round(speed.getGroundSpeed()) + "m/s");
+        Log.d("speed", "속도  " + Math.round(speed.getGroundSpeed()) + "m/s");
 
     }
 
@@ -507,7 +507,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         TextView droneBattery = (TextView) findViewById(R.id.voltage);
         String strBattery = String.format("%.1f", battery.getBatteryVoltage( ));
         droneBattery.setText("전압 " + strBattery + "v");
-        Log.d("myCheck", "배터리1 " + strBattery);
+        Log.d("battery", "배터리1 " + strBattery);
 
     }
 
@@ -588,31 +588,34 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Altitude altitude = this.drone.getAttribute(AttributeType.ALTITUDE);
         TextView droneAltitude = (TextView) findViewById(R.id.altitude);
         droneAltitude.setText("고도 " + Math.round(altitude.getTargetAltitude( )) + "m");
-        Log.d("myCheck", "고도2 " + Math.round(altitude.getTargetAltitude( )) + "m");
+        Log.d("altitude", "고도2 " + Math.round(altitude.getTargetAltitude( )) + "m");
     }
 
     public void updateDronePosition() {
 
         Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition( );
-        Log.d("myCheck", "드론 위치 : " + vehiclePosition);
-        Log.d("myCheck", "위성갯수 : " + droneGps.getSatellitesCount( ));
+        Log.d("position", "드론 위치 : " + vehiclePosition);
+        Log.d("check", "위성갯수 : " + droneGps.getSatellitesCount( ));
         TextView textview = (TextView) findViewById(R.id.textView);
         textview.setText("위성 " + droneGps.getSatellitesCount( ));
 
         Attitude attitude = this.drone.getAttribute(AttributeType.ATTITUDE);
         TextView droneYaw = (TextView) findViewById(R.id.yaw);
-        float angle = (float) attitude.getYaw( ) + 360;
+        float angle = (float) attitude.getYaw( );
+        if(angle < 0){
+            angle =(float)attitude.getYaw() + 360;
+        }
         droneYaw.setText("Yaw " + Math.round(angle) + "deg");
-        Log.d("myCheck", "YAW : " + Math.round(angle));
+        Log.d("yaw", "YAW : " + Math.round(angle));
 
 
         marker.setMap(null);//그 전 마커들 지워줌
         marker.setPosition(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
         marker.setAngle(angle); // 드론을 돌리면 yaw값이 변경되며 마커 모양을 변경시켜줌
-        marker.setIcon(OverlayImage.fromResource(R.drawable.next_2));
+        marker.setIcon(OverlayImage.fromResource(R.drawable.next));
         marker.setWidth(80);
-        marker.setHeight(250);
+        marker.setHeight(330);
         marker.setAnchor(new PointF(0.5F,0.9F));
         marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
 
@@ -622,6 +625,16 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         ArrayList<LatLng> flight_path = new ArrayList<>();
         flight_path.add(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
 
+//        for(polylineCheck = 0; polylineCheck < flight_path.size(); polylineCheck++)
+//        {
+//            polylineOverlay.setCoords(Arrays.asList(
+//                    flight_path.get(polylineCheck)
+//            ));
+//            Log.d("polyline"," check : "+polylineCheck);
+//            Log.d("polyline","path : "+flight_path.get(polylineCheck));
+//        }
+//
+//        polylineOverlay.setMap(naverMap);
 
         updateClearButton(polylineOverlay); // clear 버튼
     }
@@ -633,7 +646,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         this.naverMap = naverMap;
         UiSettings uiSettings = naverMap.getUiSettings( );
         uiSettings.setZoomControlEnabled(false);
-        uiSettings.setLogoMargin(16, 500, 1200, 3);
+        uiSettings.setLogoMargin(16, 500, 1200, 1);
         uiSettings.setScaleBarEnabled(false);
         updateMapTypeButton( ); // 지도 타입 변경 버튼
         updateIntellectualMap( ); // 지적도 on / off 버튼
