@@ -3,6 +3,7 @@ package com.example.mygcs;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
+import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -11,6 +12,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -77,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Log.i(TAG, "Start mainActivity");
         super.onCreate(savedInstanceState);
 
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
         hidNavigationBar( );
 
         setContentView(R.layout.activity_main);
@@ -121,7 +125,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             Log.d(TAG, "Turning immersive mode mode on.");
         }
         newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        newUiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
         newUiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         getWindow( ).getDecorView( ).setSystemUiVisibility(newUiOptions);
 
@@ -145,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             });
         } else if (vehicleState.isArmed()) {
             // Take off
-            ControlApi.getApi(this.drone).takeoff(10, new AbstractCommandListener() {
+            ControlApi.getApi(this.drone).takeoff(5, new AbstractCommandListener() {
 
                 @Override
                 public void onSuccess() {
@@ -357,6 +360,11 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         final Button map_on = (Button) findViewById(R.id.intellectual_map_on);
         final Button map_off = (Button) findViewById(R.id.intellectual_map_off);
+
+        if(mapLocking.getText() == mapLock.getText()){
+            CameraUpdate cameraupdate = CameraUpdate.scrollTo(latLng);
+            naverMap.moveCamera(cameraupdate); //찍히는 좌표마다 카메라가 따라다님
+        }
 
         mapLocking.setOnClickListener(new Button.OnClickListener( ) {
             @Override
@@ -594,7 +602,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         Attitude attitude = this.drone.getAttribute(AttributeType.ATTITUDE);
         TextView droneYaw = (TextView) findViewById(R.id.yaw);
-        float angle = (float) attitude.getYaw( );
+        float angle = (float) attitude.getYaw( ) + 360;
         droneYaw.setText("Yaw " + Math.round(angle) + "deg");
         Log.d("myCheck", "YAW : " + Math.round(angle));
 
@@ -602,9 +610,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         marker.setMap(null);//그 전 마커들 지워줌
         marker.setPosition(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
         marker.setAngle(angle); // 드론을 돌리면 yaw값이 변경되며 마커 모양을 변경시켜줌
-        marker.setIcon(OverlayImage.fromResource(R.drawable.next_5));
+        marker.setIcon(OverlayImage.fromResource(R.drawable.next_2));
         marker.setWidth(80);
-        marker.setHeight(80);
+        marker.setHeight(250);
+        marker.setAnchor(new PointF(0.5F,0.9F));
         marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
 
         updateMapLock(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( ))); // 맵 잠금 / 이동 버튼
