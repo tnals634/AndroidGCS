@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     NaverMap naverMap;
 
     ArrayList<LatLng> flight_path = new ArrayList<>();
+    PolylineOverlay polylineOverlay = new PolylineOverlay( );
 
     Context context = this;
 
@@ -624,7 +625,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         updateMapLock(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( ))); // 맵 잠금 / 이동 버튼
 
-        PolylineOverlay polylineOverlay = new PolylineOverlay( );
         Collections.addAll(
                 flight_path,
                 new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
