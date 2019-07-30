@@ -73,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     Marker marker = new Marker( );
 
+    Marker guideMarker = new Marker();
+
     private Spinner modeSelector;
     NaverMap naverMap;
 
@@ -239,13 +241,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     private void DialogArming(){
         AlertDialog.Builder arm_diaglog = new AlertDialog.Builder(this);
-        arm_diaglog.setMessage("Do you want Arming?").setCancelable(false).setPositiveButton("No",
+        arm_diaglog.setMessage("시동을 거시겠습니까?").setCancelable(false).setPositiveButton("아니오",
                 new DialogInterface.OnClickListener( ) {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
                     }
-                }).setNegativeButton("Yes",
+                }).setNegativeButton("예",
                 new DialogInterface.OnClickListener( ) {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -257,6 +259,44 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         alert.setTitle("Arming");
         alert.show();
+    }
+
+    public void Guide(){
+        naverMap.setOnMapLongClickListener((PointF,latLng) ->
+                GuideDialog(PointF, latLng)
+        );
+    }
+
+    public void GuideMarker(PointF point, LatLng latLng){
+
+        guideMarker.setPosition(latLng);
+        guideMarker.setIcon(OverlayImage.fromResource(R.drawable.marker_end));
+        guideMarker.setWidth(100);
+        guideMarker.setHeight(100);
+        guideMarker.setAnchor(point);
+        guideMarker.setMap(naverMap);
+    }
+    public void GuideDialog(PointF point, LatLng latlng){
+        AlertDialog.Builder guide_diaglog = new AlertDialog.Builder(this);
+        guide_diaglog.setMessage("가이드모드로 전환하시겠습니까?").setCancelable(false).setPositiveButton("아니오",
+                new DialogInterface.OnClickListener( ) {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                }).setNegativeButton("예",
+                new DialogInterface.OnClickListener( ) {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        GuideMarker(point,latlng);
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = guide_diaglog.create();
+
+        alert.setTitle("가이드모드");
+        alert.show();
+
     }
 
     @Override
@@ -694,6 +734,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         naverMap.setLocationSource(locationSource);
         naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
 
+        Guide();
     }
 
     @Override
