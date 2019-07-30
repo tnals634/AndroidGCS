@@ -144,12 +144,13 @@
     <Button
         android:id="@+id/buttonTakeoff"
         style="@style/button_style"
-        android:layout_width="80dp"
+        android:layout_width="150dp"
         android:layout_height="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/round_button_arm"
         android:includeFontPadding="true"
+        android:onClick="onArmButtonTap"
         android:outlineProvider="paddedBounds"
         android:padding="10dp"
         android:text="@string/Arm"
@@ -157,7 +158,6 @@
         android:textColor="#FFFFFF"
         android:textIsSelectable="false"
         android:textSize="14sp"
-        android:onClick="onArmButtonTap"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

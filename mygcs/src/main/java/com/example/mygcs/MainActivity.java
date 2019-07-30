@@ -1,6 +1,7 @@
 package com.example.mygcs;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -9,6 +10,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -191,17 +193,18 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             alertUser("Connect to a drone first");
         } else {
             // Connected but not Armed
-            VehicleApi.getApi(this.drone).arm(true, false, new SimpleCommandListener() {
-                @Override
-                public void onError(int executionError) {
-                    alertUser("Unable to arm vehicle.");
-                }
-
-                @Override
-                public void onTimeout() {
-                    alertUser("Arming operation timed out.");
-                }
-            });
+//            VehicleApi.getApi(this.drone).arm(true, false, new SimpleCommandListener() {
+//                @Override
+//                public void onError(int executionError) {
+//                    alertUser("Unable to arm vehicle.");
+//                }
+//
+//                @Override
+//                public void onTimeout() {
+//                    alertUser("Arming operation timed out.");
+//                }
+//            });
+            DialogArming();
         }
     }
 
@@ -217,6 +220,43 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         } else if (vehicleState.isConnected( )) {
             armButton.setText("ARM");
         }
+    }
+
+    public void ArmButton(){
+
+        VehicleApi.getApi(this.drone).arm(true, false, new SimpleCommandListener() {
+            @Override
+            public void onError(int executionError) {
+                alertUser("Unable to arm vehicle.");
+            }
+
+            @Override
+            public void onTimeout() {
+                alertUser("Arming operation timed out.");
+            }
+        });
+    }
+
+    private void DialogArming(){
+        AlertDialog.Builder arm_diaglog = new AlertDialog.Builder(this);
+        arm_diaglog.setMessage("Do you want Arming?").setCancelable(false).setPositiveButton("No",
+                new DialogInterface.OnClickListener( ) {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel();
+                    }
+                }).setNegativeButton("Yes",
+                new DialogInterface.OnClickListener( ) {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ArmButton();
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = arm_diaglog.create();
+
+        alert.setTitle("Arming");
+        alert.show();
     }
 
     @Override
@@ -647,6 +687,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 flight_path,
                 new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
         polylineOverlay.setCoords(flight_path);
+        polylineOverlay.setColor(Color.MAGENTA);
         polylineOverlay.setMap(naverMap);
         updateClearButton(polylineOverlay); // clear 버튼
 
