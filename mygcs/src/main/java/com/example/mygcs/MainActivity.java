@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
+import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.MapFragment;
 import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
@@ -29,6 +30,7 @@ import com.naver.maps.map.UiSettings;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.overlay.PolylineOverlay;
+import com.naver.maps.map.util.FusedLocationSource;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.ControlApi;
@@ -77,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     Context context = this;
 
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
+    private FusedLocationSource locationSource;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "Start mainActivity");
@@ -88,6 +93,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         setContentView(R.layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
+
+        locationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
 
         final Context context = getApplicationContext( );
         this.controlTower = new ControlTower(context);
@@ -115,6 +122,17 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         });
 
         mNaverMapFragment.getMapAsync(this);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,  @NonNull int[] grantResults) {
+        if (locationSource.onRequestPermissionsResult(
+                requestCode, permissions, grantResults)) {
+            return;
+        }
+        super.onRequestPermissionsResult(
+                requestCode, permissions, grantResults);
     }
 
     private void hidNavigationBar() {
@@ -631,6 +649,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         polylineOverlay.setCoords(flight_path);
         polylineOverlay.setMap(naverMap);
         updateClearButton(polylineOverlay); // clear 버튼
+
+        naverMap.setLocationSource(locationSource);
+        naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
 
     }
 
