@@ -53,6 +53,7 @@ import com.o3dr.services.android.lib.model.AbstractCommandListener;
 import com.o3dr.services.android.lib.model.SimpleCommandListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements DroneListener, TowerListener, LinkListener, OnMapReadyCallback {
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private Spinner modeSelector;
     NaverMap naverMap;
 
+    ArrayList<LatLng> flight_path = new ArrayList<>();
 
     Context context = this;
 
@@ -487,6 +489,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         clearBtn.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
+                flight_path.clear();
                 polyline.setMap(null);
             }
         });
@@ -622,21 +625,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         updateMapLock(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( ))); // 맵 잠금 / 이동 버튼
 
         PolylineOverlay polylineOverlay = new PolylineOverlay( );
-        ArrayList<LatLng> flight_path = new ArrayList<>();
-        flight_path.add(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
-
-//        for(polylineCheck = 0; polylineCheck < flight_path.size(); polylineCheck++)
-//        {
-//            polylineOverlay.setCoords(Arrays.asList(
-//                    flight_path.get(polylineCheck)
-//            ));
-//            Log.d("polyline"," check : "+polylineCheck);
-//            Log.d("polyline","path : "+flight_path.get(polylineCheck));
-//        }
-//
-//        polylineOverlay.setMap(naverMap);
-
+        Collections.addAll(
+                flight_path,
+                new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
+        polylineOverlay.setCoords(flight_path);
+        polylineOverlay.setMap(naverMap);
         updateClearButton(polylineOverlay); // clear 버튼
+
     }
 
     @Override
