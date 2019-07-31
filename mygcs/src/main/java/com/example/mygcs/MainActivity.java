@@ -69,15 +69,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private ControlTower controlTower;
     private int droneType = Type.TYPE_UNKNOWN;
     private final Handler handler = new Handler( );
-    private int polylineCheck = 0;
+    private int guidepositionCheck = 0;
 
     Marker marker = new Marker( );
+
+    Marker guideMarker = new Marker( );
 
     private Spinner modeSelector;
     NaverMap naverMap;
 
     ArrayList<LatLng> flight_path = new ArrayList<>();
     PolylineOverlay polylineOverlay = new PolylineOverlay( );
+
+    //Marker guideMarker = new Marker( );
 
     Context context = this;
 
@@ -279,9 +283,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         );
     }
 
-    public void GuideMarker(PointF point, LatLng latLng){
-
-        Marker guideMarker = new Marker();
+    public void GuideMarker(PointF point, LatLng latLng) {
 
         guideMarker.setPosition(latLng);
         guideMarker.setIcon(OverlayImage.fromResource(R.drawable.marker_end));
@@ -289,22 +291,55 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         guideMarker.setHeight(100);
         guideMarker.setAnchor(point);
         guideMarker.setMap(naverMap);
+        //GuideModeSelect(latLng);
 
-        GuideModeSelect();
-    }
-
-    public void GuideModeSelect(){
-        VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_GUIDED, new SimpleCommandListener() {
+        ControlApi.getApi(this.drone).goTo(new LatLong(latLng.latitude, latLng.longitude), true, new AbstractCommandListener( ) {
             @Override
-            public void onError(int executionError) {
-                alertUser("Unable to guided the vehicle.");
+            public void onSuccess() {
+                alertUser("Go to TargetPoint...");
+            }
+
+            @Override
+            public void onError(int i) {
+                alertUser("Unable to go.");
             }
 
             @Override
             public void onTimeout() {
-                alertUser("Unable to guided the vehicle.");
+                alertUser("Unable to go.");
             }
         });
+        updateDistanceFromeTarget();
+        Log.d("guide","guidePosition : " + new LatLong(latLng.latitude,latLng.longitude));
+    }
+
+    public double distanceBetweenPoint(LatLng pointA, LatLng pointB) {
+        if (pointA == null || pointB == null) {
+            return 0;
+        }
+        double dx = pointA.latitude - pointB.latitude;
+        double dy = pointA.longitude - pointB.longitude;
+        return Math.sqrt((dx*dx)+(dy*dy));
+    }
+
+    public void updateDistanceFromeTarget(){
+        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
+
+        double distanceFromTarget = 0;
+        double a = 0;
+        if (droneGps.isValid()) {
+            distanceFromTarget = distanceBetweenPoint(guideMarker.getPosition(),marker.getPosition());
+            a = Double.parseDouble(String.format("%3f",distanceFromTarget));
+        } else {
+            distanceFromTarget = 0;
+        }
+        if(distanceFromTarget <= 1){
+            Toast.makeText(this,"목적지에 도착했습니다.",Toast.LENGTH_SHORT).show();
+        }
+        Log.d("guide","between : " + distanceFromTarget);
+        Log.d("guide","guideMarker : " + guideMarker.getPosition());
+        Log.d("guide","droneMarker : " + marker.getPosition());
+        Log.d("guide","a : " + a);
     }
 
     public void GuideDialog(PointF point, LatLng latlng){
