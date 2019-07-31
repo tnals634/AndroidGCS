@@ -73,8 +73,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     Marker marker = new Marker( );
 
-    Marker guideMarker = new Marker();
-
     private Spinner modeSelector;
     NaverMap naverMap;
 
@@ -193,7 +191,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         } else if (!vehicleState.isConnected()) {
             // Connect
             alertUser("Connect to a drone first");
-        } else {
+        }
+        else {
             // Connected but not Armed
 //            VehicleApi.getApi(this.drone).arm(true, false, new SimpleCommandListener() {
 //                @Override
@@ -206,6 +205,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 //                    alertUser("Arming operation timed out.");
 //                }
 //            });
+            if(vehicleState.getVehicleMode() == VehicleMode.COPTER_LAND){
+                VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_ALT_HOLD, new SimpleCommandListener() {
+                    @Override
+                    public void onError(int executionError) {
+                        alertUser("Unable to land the vehicle.");
+                    }
+
+                    @Override
+                    public void onTimeout() {
+                        alertUser("Unable to alt_hold the vehicle.");
+                    }
+                });
+            }
             DialogArming();
         }
     }
@@ -269,13 +281,32 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     public void GuideMarker(PointF point, LatLng latLng){
 
+        Marker guideMarker = new Marker();
+
         guideMarker.setPosition(latLng);
         guideMarker.setIcon(OverlayImage.fromResource(R.drawable.marker_end));
         guideMarker.setWidth(100);
         guideMarker.setHeight(100);
         guideMarker.setAnchor(point);
         guideMarker.setMap(naverMap);
+
+        GuideModeSelect();
     }
+
+    public void GuideModeSelect(){
+        VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_GUIDED, new SimpleCommandListener() {
+            @Override
+            public void onError(int executionError) {
+                alertUser("Unable to guided the vehicle.");
+            }
+
+            @Override
+            public void onTimeout() {
+                alertUser("Unable to guided the vehicle.");
+            }
+        });
+    }
+
     public void GuideDialog(PointF point, LatLng latlng){
         AlertDialog.Builder guide_diaglog = new AlertDialog.Builder(this);
         guide_diaglog.setMessage("가이드모드로 전환하시겠습니까?").setCancelable(false).setPositiveButton("아니오",
@@ -336,6 +367,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     this.droneType = newDroneType.getDroneType( );
                     updateVehicleModesForType(this.droneType);
                 }
+                Guide();
                 break;
 
             case AttributeEvent.ALTITUDE_UPDATED:
@@ -734,7 +766,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         naverMap.setLocationSource(locationSource);
         naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
 
-        Guide();
     }
 
     @Override
