@@ -291,7 +291,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         guideMarker.setHeight(100);
         guideMarker.setAnchor(point);
         guideMarker.setMap(naverMap);
-        //GuideModeSelect(latLng);
 
         ControlApi.getApi(this.drone).goTo(new LatLong(latLng.latitude, latLng.longitude), true, new AbstractCommandListener( ) {
             @Override
@@ -309,60 +308,40 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 alertUser("Unable to go.");
             }
         });
-        updateDistanceFromeTarget();
         Log.d("guide","guidePosition : " + new LatLong(latLng.latitude,latLng.longitude));
     }
 
-    public double distanceBetweenPoint(LatLng pointA, LatLng pointB) {
-        if (pointA == null || pointB == null) {
-            return 0;
-        }
-        double dx = pointA.latitude - pointB.latitude;
-        double dy = pointA.longitude - pointB.longitude;
-        return Math.sqrt((dx*dx)+(dy*dy));
-    }
-
     public void updateDistanceFromeTarget(){
-        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
+        LatLng gMarker = new LatLng(guideMarker.getPosition().latitude,guideMarker.getPosition().longitude);
+        LatLng dMarker = new LatLng(marker.getPosition().latitude,marker.getPosition().longitude);
+        double btween = gMarker.distanceTo(dMarker);
 
-        double distanceFromTarget = 0;
-        double a = 0;
-        if (droneGps.isValid()) {
-            distanceFromTarget = distanceBetweenPoint(guideMarker.getPosition(),marker.getPosition());
-            a = Double.parseDouble(String.format("%3f",distanceFromTarget));
-        } else {
-            distanceFromTarget = 0;
-        }
-        if(distanceFromTarget <= 1){
+        if(btween <= 1){
             Toast.makeText(this,"목적지에 도착했습니다.",Toast.LENGTH_SHORT).show();
         }
-        Log.d("guide","between : " + distanceFromTarget);
-        Log.d("guide","guideMarker : " + guideMarker.getPosition());
-        Log.d("guide","droneMarker : " + marker.getPosition());
-        Log.d("guide","a : " + a);
+        Log.d("guide","gMarker.distanceTo(dMarker); : " + gMarker.distanceTo(dMarker));
     }
 
-    public void GuideDialog(PointF point, LatLng latlng){
+    public void GuideDialog(PointF point, LatLng latlng) {
         AlertDialog.Builder guide_diaglog = new AlertDialog.Builder(this);
         guide_diaglog.setMessage("가이드모드로 전환하시겠습니까?").setCancelable(false).setPositiveButton("아니오",
                 new DialogInterface.OnClickListener( ) {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        dialog.cancel();
+                        dialog.cancel( );
                     }
                 }).setNegativeButton("예",
                 new DialogInterface.OnClickListener( ) {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        GuideMarker(point,latlng);
-                        dialog.cancel();
+                        GuideMarker(point, latlng);
+                        dialog.cancel( );
                     }
                 });
-        AlertDialog alert = guide_diaglog.create();
+        AlertDialog alert = guide_diaglog.create( );
 
         alert.setTitle("가이드모드");
-        alert.show();
-
+        alert.show( );
     }
 
     @Override
@@ -394,6 +373,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
             case AttributeEvent.GPS_POSITION:
                 updateDronePosition( );
+                updateDistanceFromeTarget();
                 break;
 
             case AttributeEvent.TYPE_UPDATED:
