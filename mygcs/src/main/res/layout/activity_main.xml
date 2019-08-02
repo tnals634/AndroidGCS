@@ -345,4 +345,35 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <Button
+        android:id="@+id/altitude_setting"
+        android:layout_width="80dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="225dp"
+        android:background="@drawable/altitude_setting"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/voltage" />
+
+    <Button
+        android:id="@+id/altitude_up"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="225dp"
+        android:background="@drawable/altitude_up"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/altitude_setting"
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <Button
+        android:id="@+id/altitude_down"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="225dp"
+        android:background="@drawable/altitude_down"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/altitude_up"
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
 </android.support.constraint.ConstraintLayout>
