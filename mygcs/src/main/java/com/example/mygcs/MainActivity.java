@@ -402,6 +402,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 updateArmButton( );
                 break;
 
+            case AttributeEvent.GPS_COUNT:
+                updateSatellites();
+                break;
+
             default:
                 // Log.i("DRONE_EVENT", event); //Uncomment to see events from the drone
                 break;
@@ -817,6 +821,15 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         return angle;
     }
 
+///////////////////////////////////////////(위성갯수 확인)//////////////////////////////////////////
+
+    public void updateSatellites(){
+        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
+        TextView gps = (TextView)findViewById(R.id.textView);
+        gps.setText("위성 " + droneGps.getSatellitesCount());
+        Log.d("check","위성 : " + droneGps.getSatellitesCount());
+    }
+
 ///////////////////////////////////////////(실시간 드론위치)////////////////////////////////////////
 
     public void updateDronePosition() {
@@ -824,9 +837,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition( );
         Log.d("position", "드론 위치 : " + vehiclePosition);
-        Log.d("check", "위성갯수 : " + droneGps.getSatellitesCount( ));
-        TextView textview = (TextView) findViewById(R.id.textView);
-        textview.setText("위성 " + droneGps.getSatellitesCount( ));
 
         float angle = updateYAW();
 
