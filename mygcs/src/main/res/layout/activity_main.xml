@@ -352,6 +352,8 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="225dp"
         android:background="@drawable/altitude_setting"
+        android:text="이륙고도"
+        android:textAlignment="center"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/voltage" />
 

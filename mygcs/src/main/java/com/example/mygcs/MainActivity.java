@@ -78,10 +78,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private Spinner modeSelector;
     NaverMap naverMap;
 
+    double altitude_drone = 3;
+
     ArrayList<LatLng> flight_path = new ArrayList<>();
     PolylineOverlay polylineOverlay = new PolylineOverlay( );
-
-    //Marker guideMarker = new Marker( );
 
     Context context = this;
 
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             });
         } else if (vehicleState.isArmed()) {
             // Take off
-            ControlApi.getApi(this.drone).takeoff(3, new AbstractCommandListener() {
+            ControlApi.getApi(this.drone).takeoff(altitude_drone, new AbstractCommandListener() {
 
                 @Override
                 public void onSuccess() {
@@ -283,7 +283,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         guideMarker.setAnchor(point);
         guideMarker.setMap(naverMap);
 
-        ControlApi.getApi(this.drone).goTo(new LatLong(latLng.latitude, latLng.longitude), true, new AbstractCommandListener( ) {
+        ControlApi.getApi(this.drone).goTo(new LatLong(latLng.latitude, latLng.longitude),
+                true, new AbstractCommandListener( ) {
             @Override
             public void onSuccess() {
                 alertUser("Go to TargetPoint...");
@@ -368,6 +369,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
             case AttributeEvent.GPS_POSITION:
                 updateDronePosition( );
+                Guide();
                 updateDistanceFromeTarget();
                 break;
 
@@ -377,7 +379,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     this.droneType = newDroneType.getDroneType( );
                     updateVehicleModesForType(this.droneType);
                 }
-                Guide();
                 break;
 
             case AttributeEvent.ALTITUDE_UPDATED:
@@ -652,6 +653,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         final Button altitude_up = (Button) findViewById(R.id.altitude_up);
         final Button altitude_down = (Button) findViewById(R.id.altitude_down);
 
+        TextView droneAltitdue = (TextView) findViewById(R.id.altitude_setting);
+        droneAltitdue.setText(Math.round(altitude_drone)+"m\n이륙고도");
         altitude_setting.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
@@ -665,30 +668,31 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 }
             }
         });
-        altitude_up.setOnClickListener(new Button.OnClickListener( ) { //맵 잠금
+        altitude_up.setOnClickListener(new Button.OnClickListener( ) { //고도 높임
             @Override
             public void onClick(View v) {
                 AltitudeUp_Setting();
             }
         });
 
-        altitude_down.setOnClickListener(new Button.OnClickListener( ) { //맵 이동
+        altitude_down.setOnClickListener(new Button.OnClickListener( ) { //고도 낮춤
             @Override
             public void onClick(View v) {
-
+                AltitudeDown_Setting();
             }
         });
     }
 
     public void AltitudeUp_Setting(){
-        Altitude altitude = this.drone.getAttribute(AttributeType.ALTITUDE);
-        TextView droneAltitude = (TextView) findViewById(R.id.altitude);
-        altitude.setAltitude(altitude.getAltitude() + 1);
-        droneAltitude.setText(Math.round(altitude.getTargetAltitude( )) + "m\n이륙고도");
+        ++altitude_drone;
+        TextView droneAltitdue = (TextView) findViewById(R.id.altitude_setting);
+        droneAltitdue.setText(Math.round(altitude_drone)+"m\n이륙고도");
     }
 
     public void AltitudeDown_Setting(){
-
+        --altitude_drone;
+        TextView droneAltitdue = (TextView) findViewById(R.id.altitude_setting);
+        droneAltitdue.setText(Math.round(altitude_drone)+"m\n이륙고도");
     }
 ///////////////////////////////////////////(스피드 확인)////////////////////////////////////////////
 
@@ -795,7 +799,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Altitude altitude = this.drone.getAttribute(AttributeType.ALTITUDE);
         TextView droneAltitude = (TextView) findViewById(R.id.altitude);
         droneAltitude.setText("고도 " + Math.round(altitude.getTargetAltitude( )) + "m");
-        Log.d("altitude", "고도2 " + Math.round(altitude.getTargetAltitude( )) + "m");
+        //Log.d("altitude", "고도2 " + Math.round(altitude.getTargetAltitude( )) + "m");
     }
 
 ///////////////////////////////////////////(YAW값 확인)/////////////////////////////////////////////
