@@ -21,6 +21,11 @@
     <string name="intellectual_map_off">지적도off</string>
     <string name="intellectual_map_on">지적도on</string>
     <string name="clear">CLEAR</string>
+    <string name="droneMode">일반모드</string>
+    <string name="basicMode">일반모드</string>
+    <string name="flightRoutes">경로비행</string>
+    <string name="intervalMonitoring">간격감시</string>
+    <string name="areaMonitoring">면적감시</string>
 
     <!--<string-array name="drone_connection_types">-->
         <!--<item>USB</item>-->

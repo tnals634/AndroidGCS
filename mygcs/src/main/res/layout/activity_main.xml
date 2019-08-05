@@ -378,4 +378,106 @@
         android:visibility="invisible"
         app:layout_constraintStart_toEndOf="@+id/altitude_up"
         app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <Button
+        android:id="@+id/drone_mode"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="165dp"
+        android:background="@drawable/altitude_setting"
+        android:padding="9dp"
+        android:text="@string/droneMode"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/voltage" />
+
+    <Button
+        android:id="@+id/basicMode"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="165dp"
+        android:background="@drawable/altitude_setting"
+        android:padding="9dp"
+        android:text="@string/basicMode"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/drone_mode"
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <Button
+        android:id="@+id/areaMonitoring"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="165dp"
+        android:background="@drawable/altitude_setting"
+        android:padding="9dp"
+        android:text="@string/areaMonitoring"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/intervalMonitoring"
+        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+
+    <Button
+        android:id="@+id/flightRoutes"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="165dp"
+        android:background="@drawable/altitude_setting"
+        android:padding="9dp"
+        android:text="@string/flightRoutes"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/basicMode"
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <Button
+        android:id="@+id/intervalMonitoring"
+        android:layout_width="55dp"
+        android:layout_height="55dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="165dp"
+        android:background="@drawable/altitude_setting"
+        android:padding="9dp"
+        android:text="@string/intervalMonitoring"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/flightRoutes"
+        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="300dp"
+        android:layout_height="125dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:background="#00FFFFFF"
+        android:scrollbars="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView3">
+
+    </android.support.v7.widget.RecyclerView>
+
+    <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="300dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/recycler_text"
+        app:cardCornerRadius="10dp"
+        app:layout_constraintEnd_toEndOf="@+id/recyclerView"
+        app:layout_constraintStart_toStartOf="@+id/recyclerView"
+        app:layout_constraintTop_toBottomOf="@+id/textView3">
+
+        <TextView
+            android:id="@+id/tv_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text=""
+            android:textSize="14dp"
+            android:visibility="invisible" />
+
+    </android.support.v7.widget.CardView>
+
+
 </android.support.constraint.ConstraintLayout>

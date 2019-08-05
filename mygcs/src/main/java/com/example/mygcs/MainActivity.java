@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -69,7 +70,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private ControlTower controlTower;
     private int droneType = Type.TYPE_UNKNOWN;
     private final Handler handler = new Handler( );
-    private int guidepositionCheck = 0;
 
     Marker marker = new Marker( );
 
@@ -87,6 +87,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
     private FusedLocationSource locationSource;
+
+    RecyclerView recyclerView;
+    RecyclerView.Adapter adapter;
+    RecyclerView.LayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,7 +133,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         mNaverMapFragment.getMapAsync(this);
     }
+
 //////////////////////////////////////(내위치)//////////////////////////////////////////////////////
+
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,  @NonNull int[] grantResults) {
@@ -142,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
 ///////////////////////////////////////////(하단바 없애기)//////////////////////////////////////////
+
     private void hidNavigationBar() {
         int uiOptions = getWindow( ).getDecorView( ).getSystemUiVisibility( );
         int newUiOptions = uiOptions;
@@ -159,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
 ///////////////////////////////////////////(arming 부분)////////////////////////////////////////////
+
     public void onArmButtonTap(View view) {
         State vehicleState = this.drone.getAttribute(AttributeType.STATE);
 
@@ -268,6 +276,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
 ///////////////////////////////////////////(가이드 모드)////////////////////////////////////////////
+
     public void Guide(){
         naverMap.setOnMapLongClickListener((PointF,latLng) ->
                 GuideDialog(PointF, latLng)
@@ -337,6 +346,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
     @Override
     public void onStart() {
         super.onStart( );
@@ -356,6 +366,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
 ///////////////////////////////////////////(EVENT 부분)/////////////////////////////////////////////
+
     @Override
     public void onDroneEvent(String event, Bundle extras) {
         switch (event) {
@@ -365,6 +376,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 updateMapTypeButton( );
                 updateYAW();
                 updateAltitudeSetting();
+                updateDroneMode();
                 break;
 
             case AttributeEvent.GPS_POSITION:
@@ -698,6 +710,80 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         TextView droneAltitdue = (TextView) findViewById(R.id.altitude_setting);
         droneAltitdue.setText(Math.round(altitude_drone)+"m\n이륙고도");
     }
+
+///////////////////////////////////////////(드론 모드 변경)/////////////////////////////////////////
+
+    public void updateDroneMode(){
+
+        final Button modeSelete = (Button) findViewById(R.id.drone_mode); //모드설정
+        final Button basicMode = (Button) findViewById(R.id.basicMode); // 일반모드
+        final Button flightRoutes = (Button) findViewById(R.id.flightRoutes); // 경로비행
+        final Button intervalMonitoring = (Button) findViewById(R.id.intervalMonitoring); // 간격 감시
+        final Button areaMonitoring = (Button) findViewById(R.id.areaMonitoring); // 면적 감시
+
+        modeSelete.setOnClickListener(new Button.OnClickListener( ) {
+            @Override
+            public void onClick(View v) {
+                if (basicMode.getVisibility( ) != v.VISIBLE) {
+                    basicMode.setVisibility(v.VISIBLE);
+                    flightRoutes.setVisibility(v.VISIBLE);
+                    intervalMonitoring.setVisibility(v.VISIBLE);
+                    areaMonitoring.setVisibility(v.VISIBLE);
+
+                } else if (basicMode.getVisibility( ) == v.VISIBLE) {
+                    basicMode.setVisibility(v.INVISIBLE);
+                    flightRoutes.setVisibility(v.INVISIBLE);
+                    intervalMonitoring.setVisibility(v.INVISIBLE);
+                    areaMonitoring.setVisibility(v.INVISIBLE);
+                }
+            }
+        });
+        basicMode.setOnClickListener(new Button.OnClickListener( ) { // 일반모드
+            @Override
+            public void onClick(View v) {
+                modeSelete.setText("일반모드");
+                basicMode.setVisibility(v.INVISIBLE);
+                flightRoutes.setVisibility(v.INVISIBLE);
+                intervalMonitoring.setVisibility(v.INVISIBLE);
+                areaMonitoring.setVisibility(v.INVISIBLE);
+            }
+        });
+
+        flightRoutes.setOnClickListener(new Button.OnClickListener( ) { // 경로비행
+            @Override
+            public void onClick(View v) {
+                modeSelete.setText("경로비행");
+                basicMode.setVisibility(v.INVISIBLE);
+                flightRoutes.setVisibility(v.INVISIBLE);
+                intervalMonitoring.setVisibility(v.INVISIBLE);
+                areaMonitoring.setVisibility(v.INVISIBLE);
+            }
+        });
+
+        intervalMonitoring.setOnClickListener(new Button.OnClickListener(){ // 간격 감시
+            @Override
+            public void onClick(View v){
+                modeSelete.setText("간격감시");
+                basicMode.setVisibility(v.INVISIBLE);
+                flightRoutes.setVisibility(v.INVISIBLE);
+                intervalMonitoring.setVisibility(v.INVISIBLE);
+                areaMonitoring.setVisibility(v.INVISIBLE);
+
+            }
+        });
+
+        areaMonitoring.setOnClickListener(new Button.OnClickListener(){ // 면적 감시
+            @Override
+            public void onClick(View v){
+                modeSelete.setText("면적감시");
+                basicMode.setVisibility(v.INVISIBLE);
+                flightRoutes.setVisibility(v.INVISIBLE);
+                intervalMonitoring.setVisibility(v.INVISIBLE);
+                areaMonitoring.setVisibility(v.INVISIBLE);
+            }
+        });
+    }
+
 ///////////////////////////////////////////(스피드 확인)////////////////////////////////////////////
 
     private void updateSpeed() {
