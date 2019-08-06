@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -87,10 +88,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
     private FusedLocationSource locationSource;
-
-    RecyclerView recyclerView;
-    RecyclerView.Adapter adapter;
-    RecyclerView.LayoutManager layoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,12 +172,12 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_LAND, new SimpleCommandListener() {
                 @Override
                 public void onError(int executionError) {
-                    alertUser("Unable to land the vehicle.");
+                    alertUser("착륙 시킬 수 없습니다.");
                 }
 
                 @Override
                 public void onTimeout() {
-                    alertUser("Unable to land the vehicle.");
+                    alertUser("착륙 시킬 수 없습니다.");
                 }
             });
         } else if (vehicleState.isArmed()) {
@@ -189,34 +186,36 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
                 @Override
                 public void onSuccess() {
-                    alertUser("Taking off...");
+                    alertUser("이륙 중...");
                 }
 
                 @Override
                 public void onError(int i) {
-                    alertUser("Unable to take off.");
+                    alertUser("이륙할 수 없습니다.");
                 }
 
                 @Override
                 public void onTimeout() {
-                    alertUser("Unable to take off.");
+                    alertUser("이륙할 수 없습니다.");
                 }
+
             });
+            Log.d("altitude_drone","값 : "+altitude_drone);
         } else if (!vehicleState.isConnected()) {
             // Connect
-            alertUser("Connect to a drone first");
+            alertUser("먼저 드론과 연결하십시오.");
         }
         else {
             if(vehicleState.getVehicleMode() == VehicleMode.COPTER_LAND){
                 VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_ALT_HOLD, new SimpleCommandListener() {
                     @Override
                     public void onError(int executionError) {
-                        alertUser("Unable to land the vehicle.");
+                        alertUser("alt_hold 모드로 전환할 수 없습니다.");
                     }
 
                     @Override
                     public void onTimeout() {
-                        alertUser("Unable to alt_hold the vehicle.");
+                        alertUser("alt_hold 모드로 전환할 수 없습니다.");
                     }
                 });
             }
@@ -243,12 +242,12 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         VehicleApi.getApi(this.drone).arm(true, false, new SimpleCommandListener() {
             @Override
             public void onError(int executionError) {
-                alertUser("Unable to arm vehicle.");
+                alertUser("arming 할 수 없습니다.");
             }
 
             @Override
             public void onTimeout() {
-                alertUser("Arming operation timed out.");
+                alertUser("Arming 시간이 초과되었습니다.");
             }
         });
     }
@@ -296,17 +295,17 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 true, new AbstractCommandListener( ) {
             @Override
             public void onSuccess() {
-                alertUser("Go to TargetPoint...");
+                alertUser("목적지로 향합니다.");
             }
 
             @Override
             public void onError(int i) {
-                alertUser("Unable to go.");
+                alertUser("갈 수 없습니다.");
             }
 
             @Override
             public void onTimeout() {
-                alertUser("Unable to go.");
+                alertUser("갈 수 없습니다.");
             }
         });
         Log.d("guide","guidePosition : " + new LatLong(latLng.latitude,latLng.longitude));
@@ -371,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void onDroneEvent(String event, Bundle extras) {
         switch (event) {
             case AttributeEvent.STATE_CONNECTED:
-                alertUser("Drone Connected");
+                alertUser("드론 연결했습니다.");
                 updateArmButton();
                 updateMapTypeButton( );
                 updateYAW();
@@ -830,19 +829,31 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     @Override
     public void onTowerConnected() {
-        alertUser("DroneKit-Android Connected");
+        alertUser("DroneKit-Android 연결되었습니다.");
         this.controlTower.registerDrone(this.drone, this.handler);
         this.drone.registerDroneListener(this);
     }
-
+    ArrayList<String> list = new ArrayList<>();
     @Override
     public void onTowerDisconnected() {
-        alertUser("DroneKit-Android Interrupted");
+        alertUser("DroneKit-Android 중단되었습니다.");
     }
 
+    int count= 0;
+    int c = 0;
     protected void alertUser(String message) {
         Toast.makeText(getApplicationContext( ), message, Toast.LENGTH_SHORT).show( );
         Log.d(TAG, message);
+        list.add(" ★ " + message + " ");
+
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        SimpleTextAdapter adapter = new SimpleTextAdapter(list);
+        recyclerView.setAdapter(adapter);
+
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
     }
 
     public void onFlightModeSelected(View view) {
@@ -851,17 +862,17 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         VehicleApi.getApi(this.drone).setVehicleMode(vehicleMode, new AbstractCommandListener( ) {
             @Override
             public void onSuccess() {
-                alertUser("Vehicle mode change successful.");
+                alertUser("드론 모드 변경 성공하였습니다.");
             }
 
             @Override
             public void onError(int executionError) {
-                alertUser("Vehicle mode change failed: " + executionError);
+                alertUser("드론 모드 변경 실패 : " + executionError);
             }
 
             @Override
             public void onTimeout() {
-                alertUser("Vehicle mode change timed out.");
+                alertUser("드론 모드 변경 시간 초과되었습니다.");
             }
         });
     }
