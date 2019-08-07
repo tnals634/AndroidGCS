@@ -13,7 +13,6 @@ import java.util.ArrayList;
 public class SimpleTextAdapter extends RecyclerView.Adapter<SimpleTextAdapter.ViewHolder> {
 
     private ArrayList<String> mData = null;
-
     public class ViewHolder extends RecyclerView.ViewHolder {
         TextView textView;
         public ViewHolder(@NonNull View itemView) {

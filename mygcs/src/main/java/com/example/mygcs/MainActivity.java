@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -822,7 +823,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 if (extras != null) {
                     msg = extras.getString(LinkConnectionStatus.EXTRA_ERROR_MSG);
                 }
-                alertUser("Connection Failed:" + msg);
+                alertUser("연결 실패 : " + msg);
                 break;
         }
     }
@@ -833,19 +834,23 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         this.controlTower.registerDrone(this.drone, this.handler);
         this.drone.registerDroneListener(this);
     }
-    ArrayList<String> list = new ArrayList<>();
+
     @Override
     public void onTowerDisconnected() {
         alertUser("DroneKit-Android 중단되었습니다.");
     }
 
-    int count= 0;
-    int c = 0;
+    ArrayList<String> list = new ArrayList<>();
+    ArrayList<Long> timeCheck = new ArrayList<>();
+    long startTime;
+    long endTime;
     protected void alertUser(String message) {
+
         Toast.makeText(getApplicationContext( ), message, Toast.LENGTH_SHORT).show( );
         Log.d(TAG, message);
         list.add(" ★ " + message + " ");
-
+        startTime = SystemClock.elapsedRealtime();
+        timeCheck.add(startTime);
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -853,6 +858,14 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         recyclerView.setAdapter(adapter);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
+        if(((endTime) - (timeCheck.get(0)))/1000.0 >= 4){
+
+        }
+    }
+
+    public void Recycler(){
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
 
     }
 
@@ -900,6 +913,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Altitude altitude = this.drone.getAttribute(AttributeType.ALTITUDE);
         TextView droneAltitude = (TextView) findViewById(R.id.altitude);
         droneAltitude.setText("고도 " + Math.round(altitude.getTargetAltitude( )) + "m");
+
         //Log.d("altitude", "고도2 " + Math.round(altitude.getTargetAltitude( )) + "m");
     }
 
