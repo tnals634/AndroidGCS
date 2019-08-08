@@ -419,6 +419,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 break;
 
             default:
+                elapsedTime();
                 // Log.i("DRONE_EVENT", event); //Uncomment to see events from the drone
                 break;
         }
@@ -844,6 +845,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     ArrayList<Long> timeCheck = new ArrayList<>();
     long startTime;
     long endTime;
+    int count = 0;
+    SimpleTextAdapter adapter;
+
     protected void alertUser(String message) {
 
         Toast.makeText(getApplicationContext( ), message, Toast.LENGTH_SHORT).show( );
@@ -854,19 +858,38 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        SimpleTextAdapter adapter = new SimpleTextAdapter(list);
+        adapter = new SimpleTextAdapter(list);
         recyclerView.setAdapter(adapter);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
 
-        if(((endTime) - (timeCheck.get(0)))/1000.0 >= 4){
-
-        }
     }
 
-    public void Recycler(){
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+    public void elapsedTime() {
 
+        double lastTime = (endTime - timeCheck.get(count)) / 1000.0;
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        if (count < timeCheck.size()) {
+
+            if (lastTime >= 5) {
+                list.remove(0);
+                Log.d("time", "countCheck : " + count);
+                Log.d("time","listSIZE : " + list.size());
+                Log.d("time","timeCheckSIZE : "+timeCheck.size());
+                Log.d("time", "startTime : " + timeCheck.get(count));
+                Log.d("time", "endTime : " + endTime);
+                if(count + 1 < timeCheck.size()){
+                    count++;
+                    endTime = timeCheck.get(count);
+                }
+                Log.d("time", "nextStartTime : " + timeCheck.get(count));
+                Log.d("time", "nextEndTime : " + endTime);
+                Log.d("time", "checkTime : " + lastTime);
+            }
+            adapter.notifyDataSetChanged();
+            recyclerView.setAdapter(adapter);
+        }
+        endTime = SystemClock.elapsedRealtime( );
     }
 
     public void onFlightModeSelected(View view) {
@@ -986,5 +1009,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         uiSettings.setScaleBarEnabled(false);
         updateMapTypeButton( ); // 지도 타입 변경 버튼
         updateIntellectualMap( ); // 지적도 on / off 버튼
+
     }
 }
