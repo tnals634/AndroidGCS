@@ -35,7 +35,7 @@
 
     <TextView
         android:id="@+id/voltage"
-        android:layout_width="99dp"
+        android:layout_width="0dp"
         android:layout_height="30dp"
         android:layout_marginEnd="146dp"
         android:layout_marginBottom="315dp"
@@ -54,7 +54,7 @@
 
     <TextView
         android:id="@+id/textView3"
-        android:layout_width="150dp"
+        android:layout_width="0dp"
         android:layout_height="30dp"
         android:layout_marginBottom="317dp"
         android:layout_weight="1"
@@ -64,9 +64,8 @@
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/buttonTakeoff"
-        app:layout_constraintEnd_toStartOf="@+id/textView"
-        app:layout_constraintHorizontal_bias="0.161"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/spinner"
+        app:layout_constraintStart_toEndOf="@+id/voltage"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
@@ -85,9 +84,8 @@
 
     <TextView
         android:id="@+id/altitude"
-        android:layout_width="100dp"
+        android:layout_width="0dp"
         android:layout_height="30dp"
-        android:layout_marginEnd="18dp"
         android:layout_weight="1"
         android:paddingTop="1dp"
         android:text="@string/Altitude"
@@ -95,13 +93,12 @@
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/voltage"
-        app:layout_constraintEnd_toEndOf="@+id/speed"
-        app:layout_constraintHorizontal_bias="0.828"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintEnd_toStartOf="@+id/speed"
+        app:layout_constraintStart_toEndOf="@+id/spinner" />
 
     <TextView
         android:id="@+id/speed"
-        android:layout_width="100dp"
+        android:layout_width="0dp"
         android:layout_height="30dp"
         android:layout_marginStart="496dp"
         android:layout_weight="1"
@@ -111,11 +108,12 @@
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:layout_constraintBaseline_toBaselineOf="@+id/voltage"
+        app:layout_constraintEnd_toStartOf="@+id/yaw"
         app:layout_constraintStart_toStartOf="@+id/frameLayout" />
 
     <TextView
         android:id="@+id/yaw"
-        android:layout_width="150dp"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="596dp"
         android:layout_marginBottom="315dp"
@@ -126,6 +124,8 @@
         android:textColor="#FFFFFF"
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@+id/intellectual_map"
+        app:layout_constraintEnd_toStartOf="@+id/textView"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/frameLayout"
         app:layout_constraintTop_toTopOf="parent" />
 
