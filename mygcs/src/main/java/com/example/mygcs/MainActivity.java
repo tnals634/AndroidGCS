@@ -34,8 +34,10 @@ import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.UiSettings;
 import com.naver.maps.map.overlay.Marker;
 import com.naver.maps.map.overlay.OverlayImage;
+import com.naver.maps.map.overlay.PolygonOverlay;
 import com.naver.maps.map.overlay.PolylineOverlay;
 import com.naver.maps.map.util.FusedLocationSource;
+import com.naver.maps.map.util.MarkerIcons;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.ControlApi;
@@ -58,8 +60,10 @@ import com.o3dr.services.android.lib.drone.property.VehicleMode;
 import com.o3dr.services.android.lib.gcs.link.LinkConnectionStatus;
 import com.o3dr.services.android.lib.model.AbstractCommandListener;
 import com.o3dr.services.android.lib.model.SimpleCommandListener;
+import com.o3dr.services.android.lib.util.MathUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -311,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Log.d("guide", "guidePosition : " + new LatLong(latLng.latitude, latLng.longitude));
     }
 
-    public void updateDistanceFromeTarget() {
+    public void updateDistanceFromTarget() {
         LatLng gMarker = new LatLng(guideMarker.getPosition( ).latitude, guideMarker.getPosition( ).longitude);
         LatLng dMarker = new LatLng(marker.getPosition( ).latitude, marker.getPosition( ).longitude);
         double btween = gMarker.distanceTo(dMarker);
@@ -381,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             case AttributeEvent.GPS_POSITION:
                 updateDronePosition( );
                 Guide( );
-                updateDistanceFromeTarget( );
+                updateDistanceFromTarget( );
                 break;
 
             case AttributeEvent.TYPE_UPDATED:
@@ -840,6 +844,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         alertUser("DroneKit-Android 중단되었습니다.");
     }
 
+//////////////////////////////(recyclerView (메시지 뷰) 생성)///////////////////////////////////////
+
     ArrayList<String> list = new ArrayList<>( );
     ArrayList<Long> timeCheck = new ArrayList<>( );
     long startTime;
@@ -860,7 +866,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         adapter = new SimpleTextAdapter(list);
         recyclerView.setAdapter(adapter);
 
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this,
+                LinearLayoutManager.VERTICAL, false));
 
     }
 
@@ -871,9 +878,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Log.d("time1", "==============================================");
         Log.d("time1", "lastTime : " + lastTime);
         Log.d("time1", "==============================================");
-        if(count == timeCheck.size()){
-            endTime = 0;
-        }
         if (count < timeCheck.size( )) {
             if (lastTime >= 5) {
                 list.remove(0);
@@ -882,7 +886,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 Log.d("time1", "timeCheckSIZE : " + timeCheck.size( ));
                 Log.d("time1", "startTime : " + timeCheck.get(count));
                 Log.d("time1", "endTime : " + endTime);
-                count++;
+                if (count + 1 < timeCheck.size( )) {
+                    count++;
+                }
                 Log.d("time1", "===================");
                 Log.d("time1", "nextCountCheck : " + count);
                 Log.d("time1", "timeCheckSIZE : " + timeCheck.size( ));
@@ -893,10 +899,88 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 recyclerView.setAdapter(adapter);
             }
         }
-        else{
-            endTime = SystemClock.elapsedRealtime( );
-        }
+        endTime = SystemClock.elapsedRealtime( );
     }
+
+/////////////////////////////(A,B지점 지정 후 Auto 모드로 운행)/////////////////////////////////////
+
+    Marker start_A = new Marker();
+    Marker sub_A = new Marker();
+    Marker end_B = new Marker();
+    Marker sub_B = new Marker();
+
+    public void interval_PointA(LatLng latLng){
+        float angle = updateYAW( );
+
+        start_A.setPosition(latLng);
+        start_A.setWidth(50);
+        start_A.setHeight(80);
+        start_A.setAngle(angle);
+        start_A.setIcon(MarkerIcons.RED);
+        start_A.setMap(naverMap);
+        pointB();
+    }
+    public void interval_PointB(LatLng latLng){
+        float angle = updateYAW( );
+
+        end_B.setPosition(latLng);
+        end_B.setWidth(50);
+        end_B.setHeight(80);
+        end_B.setAngle(angle);
+        end_B.setIcon(MarkerIcons.BLACK);
+        end_B.setMap(naverMap);
+        interval();
+    }
+
+    public void point(){
+
+        naverMap.setOnMapClickListener((PointF, latLng) ->
+                interval_PointA(latLng)
+        );
+    }
+
+    public void pointB(){
+        naverMap.setOnMapClickListener((PointF, latLng) ->
+                interval_PointB(latLng)
+        );
+    }
+    public void interval(){
+
+        LatLong A_latLong = new LatLong(start_A.getPosition().latitude,start_A.getPosition().longitude);
+        LatLong B_latLong = new LatLong(end_B.getPosition().latitude,end_B.getPosition().longitude);
+        double degree = MathUtils.getHeadingFromCoordinates(A_latLong,B_latLong);
+        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong,degree + 90,50 );
+        LatLng position_subA = new LatLng(positionA.getLatitude(),positionA.getLongitude());
+        sub_A.setPosition(position_subA);
+        sub_A.setWidth(50);
+        sub_A.setHeight(80);
+        sub_A.setIcon(MarkerIcons.YELLOW);
+        sub_A.setMap(naverMap);
+        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong,degree + 90,50 );
+        LatLng position_subB = new LatLng(positionB.getLatitude(),positionB.getLongitude());
+        sub_B.setPosition(position_subB);
+        sub_B.setWidth(50);
+        sub_B.setHeight(80);
+        sub_B.setIcon(MarkerIcons.GRAY);
+        sub_B.setMap(naverMap);
+
+        PolygonOverlay polygon = new PolygonOverlay();
+        polygon.setCoords(Arrays.asList(
+                start_A.getPosition(),
+                sub_A.getPosition(),
+                sub_B.getPosition(),
+                end_B.getPosition()
+        ));
+        int color_polygon = Color.parseColor("#59FF0F00");
+        polygon.setColor(color_polygon);
+        Log.d("point_interval","A_angle : "+ start_A.getAngle());
+        polygon.setMap(naverMap);
+    }
+
+////////////////////////////////////(검색 기능)/////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public void onFlightModeSelected(View view) {
         VehicleMode vehicleMode = (VehicleMode) this.modeSelector.getSelectedItem( );
@@ -1016,5 +1100,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         updateMapTypeButton( ); // 지도 타입 변경 버튼
         updateIntellectualMap( ); // 지적도 on / off 버튼
 
+        point();
     }
 }
