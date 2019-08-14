@@ -734,12 +734,14 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     intervalMonitoring.setVisibility(v.VISIBLE);
                     areaMonitoring.setVisibility(v.VISIBLE);
 
-                } else if (basicMode.getVisibility( ) == v.VISIBLE) {
+                }
+                else if (basicMode.getVisibility( ) == v.VISIBLE) {
                     basicMode.setVisibility(v.INVISIBLE);
                     flightRoutes.setVisibility(v.INVISIBLE);
                     intervalMonitoring.setVisibility(v.INVISIBLE);
                     areaMonitoring.setVisibility(v.INVISIBLE);
                 }
+
             }
         });
         basicMode.setOnClickListener(new Button.OnClickListener( ) { // 일반모드
@@ -750,6 +752,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
                 areaMonitoring.setVisibility(v.INVISIBLE);
+                interval_Disappear();
             }
         });
 
@@ -761,6 +764,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
                 areaMonitoring.setVisibility(v.INVISIBLE);
+                interval_Disappear();
             }
         });
 
@@ -768,6 +772,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             @Override
             public void onClick(View v) {
                 modeSelete.setText("간격감시");
+                pointA();
                 basicMode.setVisibility(v.INVISIBLE);
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
@@ -784,6 +789,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
                 areaMonitoring.setVisibility(v.INVISIBLE);
+                interval_Disappear();
             }
         });
     }
@@ -906,34 +912,32 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     Marker start_A = new Marker();
     Marker sub_A = new Marker();
-    Marker end_B = new Marker();
+    Marker start_B = new Marker();
     Marker sub_B = new Marker();
-
+    PolygonOverlay interval_polygon = new PolygonOverlay();
+    int interval_count = 0;
     public void interval_PointA(LatLng latLng){
-        float angle = updateYAW( );
 
         start_A.setPosition(latLng);
         start_A.setWidth(50);
         start_A.setHeight(80);
-        start_A.setAngle(angle);
         start_A.setIcon(MarkerIcons.RED);
         start_A.setMap(naverMap);
         pointB();
     }
-    public void interval_PointB(LatLng latLng){
-        float angle = updateYAW( );
+    public void interval_PointB(LatLng latLng) {
 
-        end_B.setPosition(latLng);
-        end_B.setWidth(50);
-        end_B.setHeight(80);
-        end_B.setAngle(angle);
-        end_B.setIcon(MarkerIcons.BLACK);
-        end_B.setMap(naverMap);
-        interval();
+        if(interval_count == 0) {
+            start_B.setPosition(latLng);
+            start_B.setWidth(50);
+            start_B.setHeight(80);
+            start_B.setIcon(MarkerIcons.BLACK);
+            start_B.setMap(naverMap);
+            interval( );
+        }
     }
 
-    public void point(){
-
+    public void pointA(){
         naverMap.setOnMapClickListener((PointF, latLng) ->
                 interval_PointA(latLng)
         );
@@ -947,8 +951,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void interval(){
 
         LatLong A_latLong = new LatLong(start_A.getPosition().latitude,start_A.getPosition().longitude);
-        LatLong B_latLong = new LatLong(end_B.getPosition().latitude,end_B.getPosition().longitude);
+        LatLong B_latLong = new LatLong(start_B.getPosition().latitude,start_B.getPosition().longitude);
         double degree = MathUtils.getHeadingFromCoordinates(A_latLong,B_latLong);
+
         LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong,degree + 90,50 );
         LatLng position_subA = new LatLng(positionA.getLatitude(),positionA.getLongitude());
         sub_A.setPosition(position_subA);
@@ -964,17 +969,32 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         sub_B.setIcon(MarkerIcons.GRAY);
         sub_B.setMap(naverMap);
 
-        PolygonOverlay polygon = new PolygonOverlay();
-        polygon.setCoords(Arrays.asList(
+        interval_polygon.setCoords(Arrays.asList(
                 start_A.getPosition(),
                 sub_A.getPosition(),
                 sub_B.getPosition(),
-                end_B.getPosition()
+                start_B.getPosition()
         ));
         int color_polygon = Color.parseColor("#59FF0F00");
-        polygon.setColor(color_polygon);
+        interval_polygon.setColor(color_polygon);
         Log.d("point_interval","A_angle : "+ start_A.getAngle());
-        polygon.setMap(naverMap);
+        interval_polygon.setMap(naverMap);
+        ++interval_count;
+    }
+    public void interval_Disappear(){
+        naverMap.setOnMapClickListener((PointF, latLng) ->
+                disappear(latLng)
+        );
+        disappear(start_A.getPosition());
+    }
+    public void disappear(LatLng latLng){
+
+        start_A.setMap(null);
+        start_B.setMap(null);
+        sub_A.setMap(null);
+        sub_B.setMap(null);
+        interval_polygon.setMap(null);
+        interval_count = 0;
     }
 
 ////////////////////////////////////(검색 기능)/////////////////////////////////////////////////////
@@ -1099,7 +1119,5 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         uiSettings.setScaleBarEnabled(false);
         updateMapTypeButton( ); // 지도 타입 변경 버튼
         updateIntellectualMap( ); // 지적도 on / off 버튼
-
-        point();
     }
 }
