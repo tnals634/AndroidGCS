@@ -37,7 +37,6 @@ import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.overlay.PolygonOverlay;
 import com.naver.maps.map.overlay.PolylineOverlay;
 import com.naver.maps.map.util.FusedLocationSource;
-import com.naver.maps.map.util.MarkerIcons;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.ControlApi;
@@ -919,9 +918,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void interval_PointA(LatLng latLng){
 
         start_A.setPosition(latLng);
-        start_A.setWidth(50);
+        start_A.setWidth(80);
         start_A.setHeight(80);
-        start_A.setIcon(MarkerIcons.RED);
+        start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
         start_A.setMap(naverMap);
         pointB();
     }
@@ -929,9 +928,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         if(interval_count == 0) {
             start_B.setPosition(latLng);
-            start_B.setWidth(50);
+            start_B.setWidth(80);
             start_B.setHeight(80);
-            start_B.setIcon(MarkerIcons.BLACK);
+            start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
             start_B.setMap(naverMap);
             interval( );
         }
@@ -957,16 +956,16 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong,degree + 90,50 );
         LatLng position_subA = new LatLng(positionA.getLatitude(),positionA.getLongitude());
         sub_A.setPosition(position_subA);
-        sub_A.setWidth(50);
+        sub_A.setWidth(80);
         sub_A.setHeight(80);
-        sub_A.setIcon(MarkerIcons.YELLOW);
+        sub_A.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
         sub_A.setMap(naverMap);
         LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong,degree + 90,50 );
         LatLng position_subB = new LatLng(positionB.getLatitude(),positionB.getLongitude());
         sub_B.setPosition(position_subB);
-        sub_B.setWidth(50);
+        sub_B.setWidth(80);
         sub_B.setHeight(80);
-        sub_B.setIcon(MarkerIcons.GRAY);
+        sub_B.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
         sub_B.setMap(naverMap);
 
         interval_polygon.setCoords(Arrays.asList(
