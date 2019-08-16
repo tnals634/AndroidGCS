@@ -733,8 +733,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     intervalMonitoring.setVisibility(v.VISIBLE);
                     areaMonitoring.setVisibility(v.VISIBLE);
 
-                }
-                else if (basicMode.getVisibility( ) == v.VISIBLE) {
+                } else if (basicMode.getVisibility( ) == v.VISIBLE) {
                     basicMode.setVisibility(v.INVISIBLE);
                     flightRoutes.setVisibility(v.INVISIBLE);
                     intervalMonitoring.setVisibility(v.INVISIBLE);
@@ -751,7 +750,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
                 areaMonitoring.setVisibility(v.INVISIBLE);
-                interval_Disappear();
+                interval_Disappear( );
             }
         });
 
@@ -763,7 +762,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
                 areaMonitoring.setVisibility(v.INVISIBLE);
-                interval_Disappear();
+                interval_Disappear( );
             }
         });
 
@@ -771,7 +770,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             @Override
             public void onClick(View v) {
                 modeSelete.setText("간격감시");
-                pointA();
+                pointA( );
                 basicMode.setVisibility(v.INVISIBLE);
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
@@ -788,7 +787,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
                 areaMonitoring.setVisibility(v.INVISIBLE);
-                interval_Disappear();
+                interval_Disappear( );
             }
         });
     }
@@ -909,59 +908,63 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
 /////////////////////////////(A,B지점 지정 후 Auto 모드로 운행)/////////////////////////////////////
 
-    Marker start_A = new Marker();
-    Marker sub_A = new Marker();
-    Marker start_B = new Marker();
-    Marker sub_B = new Marker();
-    PolygonOverlay interval_polygon = new PolygonOverlay();
+    Marker start_A = new Marker( );
+    Marker sub_A = new Marker( );
+    Marker start_B = new Marker( );
+    Marker sub_B = new Marker( );
+    PolygonOverlay interval_polygon = new PolygonOverlay( );
     int interval_count = 0;
-    public void interval_PointA(LatLng latLng){
+
+    public void interval_PointA(LatLng latLng) {
 
         start_A.setPosition(latLng);
         start_A.setWidth(80);
         start_A.setHeight(80);
         start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
         start_A.setMap(naverMap);
-        pointB();
+        pointB( );
     }
+
     public void interval_PointB(LatLng latLng) {
 
-        if(interval_count == 0) {
+        if (interval_count == 0) {
             start_B.setPosition(latLng);
             start_B.setWidth(80);
             start_B.setHeight(80);
             start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
             start_B.setMap(naverMap);
             interval( );
+            checkMiter( );
         }
     }
 
-    public void pointA(){
+    public void pointA() {
         naverMap.setOnMapClickListener((PointF, latLng) ->
                 interval_PointA(latLng)
         );
     }
 
-    public void pointB(){
+    public void pointB() {
         naverMap.setOnMapClickListener((PointF, latLng) ->
                 interval_PointB(latLng)
         );
     }
-    public void interval(){
 
-        LatLong A_latLong = new LatLong(start_A.getPosition().latitude,start_A.getPosition().longitude);
-        LatLong B_latLong = new LatLong(start_B.getPosition().latitude,start_B.getPosition().longitude);
-        double degree = MathUtils.getHeadingFromCoordinates(A_latLong,B_latLong);
+    public void interval() {
 
-        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong,degree + 90,50 );
-        LatLng position_subA = new LatLng(positionA.getLatitude(),positionA.getLongitude());
+        LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
+        LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
+        double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
+
+        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90, 50);
+        LatLng position_subA = new LatLng(positionA.getLatitude( ), positionA.getLongitude( ));
         sub_A.setPosition(position_subA);
         sub_A.setWidth(80);
         sub_A.setHeight(80);
         sub_A.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
         sub_A.setMap(naverMap);
-        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong,degree + 90,50 );
-        LatLng position_subB = new LatLng(positionB.getLatitude(),positionB.getLongitude());
+        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90, 50);
+        LatLng position_subB = new LatLng(positionB.getLatitude( ), positionB.getLongitude( ));
         sub_B.setPosition(position_subB);
         sub_B.setWidth(80);
         sub_B.setHeight(80);
@@ -969,24 +972,26 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         sub_B.setMap(naverMap);
 
         interval_polygon.setCoords(Arrays.asList(
-                start_A.getPosition(),
-                sub_A.getPosition(),
-                sub_B.getPosition(),
-                start_B.getPosition()
+                start_A.getPosition( ),
+                sub_A.getPosition( ),
+                sub_B.getPosition( ),
+                start_B.getPosition( )
         ));
         int color_polygon = Color.parseColor("#59FF0F00");
         interval_polygon.setColor(color_polygon);
-        Log.d("point_interval","A_angle : "+ start_A.getAngle());
+        Log.d("point_interval", "A_angle : " + start_A.getAngle( ));
         interval_polygon.setMap(naverMap);
         ++interval_count;
     }
-    public void interval_Disappear(){
+
+    public void interval_Disappear() {
         naverMap.setOnMapClickListener((PointF, latLng) ->
                 disappear(latLng)
         );
-        disappear(start_A.getPosition());
+        disappear(start_A.getPosition( ));
     }
-    public void disappear(LatLng latLng){
+
+    public void disappear(LatLng latLng) {
 
         start_A.setMap(null);
         start_B.setMap(null);
@@ -996,8 +1001,81 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         interval_count = 0;
     }
 
-////////////////////////////////////(검색 기능)/////////////////////////////////////////////////////
+////////////////////////////////////(간격 감시 기능)////////////////////////////////////////////////
 
+    ArrayList<LatLng> count_Miter = new ArrayList<>( );
+
+    public void checkMiter() {
+        int max_Miter = 50;
+        int check_Miter = 5;
+        int count_CheckMiter = 0;
+        double Mul_Check = 0;
+        int count = 0;
+
+        LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
+        LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
+        double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
+
+        LatLong startPoint_A;
+        LatLong startPoint_B;
+        PolylineOverlay interval_polyline = new PolylineOverlay( );
+
+        for (count_CheckMiter = 0; Mul_Check < max_Miter; count_CheckMiter++) {
+
+            Mul_Check = check_Miter * count_CheckMiter;
+
+            if ((count_CheckMiter == 0) || (count_CheckMiter % 2 == 0)) {
+                startPoint_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
+                        Mul_Check);
+
+                startPoint_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
+                        Mul_Check);
+
+                Collections.addAll(
+                        count_Miter,
+                        new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )),
+                        new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( ))
+                );
+                if(Mul_Check>=max_Miter){
+                    LatLong end_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
+                            max_Miter);
+                    LatLong end_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
+                            max_Miter);
+                    count_Miter.set(count,new LatLng(end_A.getLatitude(),end_A.getLongitude()));
+                    count_Miter.set(count+1,new LatLng(end_B.getLatitude(),end_B.getLongitude()));
+                }
+                count += 2;
+                Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
+                Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
+
+            } else if (count_CheckMiter % 2 != 0) {
+                startPoint_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
+                        Mul_Check);
+
+                startPoint_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
+                        Mul_Check);
+
+                Collections.addAll(
+                        count_Miter,
+                        new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )),
+                        new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( ))
+                );
+                if(Mul_Check>=max_Miter){
+                    LatLong end_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
+                            max_Miter);
+                    LatLong end_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
+                            max_Miter);
+                    count_Miter.set(count,new LatLng(end_B.getLatitude(),end_B.getLongitude()));
+                    count_Miter.set(count+1,new LatLng(end_A.getLatitude(),end_A.getLongitude()));
+                }
+                count += 2;
+                Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
+                Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
+            }
+        }
+        interval_polyline.setCoords(count_Miter);
+        interval_polyline.setMap(naverMap);
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
