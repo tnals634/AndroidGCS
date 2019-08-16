@@ -998,12 +998,15 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         sub_A.setMap(null);
         sub_B.setMap(null);
         interval_polygon.setMap(null);
+        interval_polyline.setMap(null);
+        count_Miter.clear();
         interval_count = 0;
     }
 
 ////////////////////////////////////(간격 감시 기능)////////////////////////////////////////////////
 
     ArrayList<LatLng> count_Miter = new ArrayList<>( );
+    PolylineOverlay interval_polyline = new PolylineOverlay( );
 
     public void checkMiter() {
         int max_Miter = 50;
@@ -1018,7 +1021,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         LatLong startPoint_A;
         LatLong startPoint_B;
-        PolylineOverlay interval_polyline = new PolylineOverlay( );
 
         for (count_CheckMiter = 0; Mul_Check < max_Miter; count_CheckMiter++) {
 
