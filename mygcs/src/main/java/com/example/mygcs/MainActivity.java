@@ -21,6 +21,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -45,9 +46,12 @@ import com.o3dr.android.client.interfaces.DroneListener;
 import com.o3dr.android.client.interfaces.LinkListener;
 import com.o3dr.android.client.interfaces.TowerListener;
 import com.o3dr.services.android.lib.coordinate.LatLong;
+import com.o3dr.services.android.lib.coordinate.LatLongAlt;
 import com.o3dr.services.android.lib.drone.attribute.AttributeEvent;
 import com.o3dr.services.android.lib.drone.attribute.AttributeType;
 import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
+import com.o3dr.services.android.lib.drone.mission.Mission;
+import com.o3dr.services.android.lib.drone.mission.item.spatial.Waypoint;
 import com.o3dr.services.android.lib.drone.property.Altitude;
 import com.o3dr.services.android.lib.drone.property.Attitude;
 import com.o3dr.services.android.lib.drone.property.Battery;
@@ -770,7 +774,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             @Override
             public void onClick(View v) {
                 modeSelete.setText("간격감시");
-                pointA( );
+                intervalDialog();
                 basicMode.setVisibility(v.INVISIBLE);
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
@@ -915,17 +919,17 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     PolygonOverlay interval_polygon = new PolygonOverlay( );
     int interval_count = 0;
 
-    public void interval_PointA(LatLng latLng) {
+    public void interval_PointA(LatLng latLng, int max_Miter) {
 
         start_A.setPosition(latLng);
         start_A.setWidth(80);
         start_A.setHeight(80);
         start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
         start_A.setMap(naverMap);
-        pointB( );
+        pointB(max_Miter);
     }
 
-    public void interval_PointB(LatLng latLng) {
+    public void interval_PointB(LatLng latLng, int max_Miter) {
 
         if (interval_count == 0) {
             start_B.setPosition(latLng);
@@ -933,37 +937,36 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             start_B.setHeight(80);
             start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
             start_B.setMap(naverMap);
-            interval( );
-            checkMiter( );
+            interval(max_Miter);
         }
     }
 
-    public void pointA() {
+    public void pointA(int max_Miter) {
         naverMap.setOnMapClickListener((PointF, latLng) ->
-                interval_PointA(latLng)
+                interval_PointA(latLng, max_Miter)
         );
     }
 
-    public void pointB() {
+    public void pointB(int max_Miter) {
         naverMap.setOnMapClickListener((PointF, latLng) ->
-                interval_PointB(latLng)
+                interval_PointB(latLng, max_Miter)
         );
     }
 
-    public void interval() {
+    public void interval(int max_Miter) {
 
         LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
         LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
         double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
 
-        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90, 50);
+        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90, max_Miter);
         LatLng position_subA = new LatLng(positionA.getLatitude( ), positionA.getLongitude( ));
         sub_A.setPosition(position_subA);
         sub_A.setWidth(80);
         sub_A.setHeight(80);
         sub_A.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
         sub_A.setMap(naverMap);
-        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90, 50);
+        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90, max_Miter);
         LatLng position_subB = new LatLng(positionB.getLatitude( ), positionB.getLongitude( ));
         sub_B.setPosition(position_subB);
         sub_B.setWidth(80);
@@ -1008,9 +1011,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     ArrayList<LatLng> count_Miter = new ArrayList<>( );
     PolylineOverlay interval_polyline = new PolylineOverlay( );
 
-    public void checkMiter() {
-        int max_Miter = 50;
-        int check_Miter = 5;
+    public void checkMiter(int max_Miter, int check_Miter) {
+//        int max_Miter = 50;
+//        int check_Miter = 5;
         int count_CheckMiter = 0;
         double Mul_Check = 0;
         int count = 0;
@@ -1071,12 +1074,64 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     count_Miter.set(count+1,new LatLng(end_A.getLatitude(),end_A.getLongitude()));
                 }
                 count += 2;
-                Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
                 Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
+                Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
             }
         }
         interval_polyline.setCoords(count_Miter);
         interval_polyline.setMap(naverMap);
+    }
+
+    public void intervalDialog(){
+
+        AlertDialog.Builder interval_diaglog = new AlertDialog.Builder(this);
+
+        final EditText intervalText = new EditText(MainActivity.this);
+        final EditText intervalMoniteringText = new EditText(MainActivity.this);
+
+        interval_diaglog.setMessage("총 가로 길이");
+        interval_diaglog.setView(intervalText);
+
+        interval_diaglog.setMessage("간격 감시 거리");
+        interval_diaglog.setView(intervalMoniteringText);
+
+        interval_diaglog.setMessage("간격감시를 하시겠습니까?").setCancelable(false).setPositiveButton("아니오",
+                new DialogInterface.OnClickListener( ) {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.cancel( );
+                    }
+                }).setNegativeButton("예",
+                new DialogInterface.OnClickListener( ) {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        String intervalTextValue = intervalText.getText().toString();
+                        String intervalMoniteringTextValue = intervalMoniteringText.getText().toString();
+                        pointA(Integer.parseInt(intervalTextValue));
+                        checkMiter(Integer.parseInt(intervalTextValue),Integer.parseInt(intervalMoniteringTextValue));
+                        dialog.cancel( );
+                    }
+                });
+        AlertDialog alert = interval_diaglog.create( );
+
+        alert.setTitle("간격감시시");
+        alert.show( );
+
+    }
+
+//////////////////////////////////(간격감시 모드시 auto모드 작동)///////////////////////////////////
+Mission intervalMission = new Mission();
+
+    public void autoInterval(){
+
+        Waypoint intervalWaypoint = new Waypoint();
+        for(int index = 0; index<count_Miter.size();index++) {
+            intervalWaypoint.setCoordinate(new LatLongAlt(count_Miter.get(index).latitude,count_Miter.get(index).longitude,altitude_drone));
+            intervalMission.addMissionItem(index,intervalWaypoint);
+            Log.d("interval","mission : " + intervalMission);
+        }
+
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

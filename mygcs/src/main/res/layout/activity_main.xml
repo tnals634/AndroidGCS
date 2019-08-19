@@ -350,7 +350,7 @@
         android:layout_width="80dp"
         android:layout_height="55dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="225dp"
+        android:layout_marginTop="200dp"
         android:background="@drawable/altitude_setting"
         android:text="이륙고도"
         android:textAlignment="center"
@@ -362,7 +362,7 @@
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="225dp"
+        android:layout_marginTop="200dp"
         android:background="@drawable/altitude_up"
         android:visibility="invisible"
         app:layout_constraintStart_toEndOf="@+id/altitude_setting"
@@ -373,7 +373,7 @@
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="225dp"
+        android:layout_marginTop="200dp"
         android:background="@drawable/altitude_down"
         android:visibility="invisible"
         app:layout_constraintStart_toEndOf="@+id/altitude_up"
@@ -384,7 +384,7 @@
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="165dp"
+        android:layout_marginTop="140dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/droneMode"
@@ -397,7 +397,7 @@
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="165dp"
+        android:layout_marginTop="140dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/basicMode"
@@ -410,7 +410,7 @@
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="165dp"
+        android:layout_marginTop="140dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/areaMonitoring"
@@ -423,7 +423,7 @@
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="165dp"
+        android:layout_marginTop="140dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/flightRoutes"
@@ -436,7 +436,7 @@
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="165dp"
+        android:layout_marginTop="140dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/intervalMonitoring"
@@ -456,6 +456,20 @@
         app:layout_constraintTop_toBottomOf="@+id/textView3">
 
     </android.support.v7.widget.RecyclerView>
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="260dp"
+        android:text="@string/missionTransmission"
+        style="@style/button_style"
+        android:background="@drawable/round_button_arm"
+        android:textColor="#FFFFFF"
+        android:textAlignment="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/voltage" />
 
 
 </android.support.constraint.ConstraintLayout>
