@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/interval"
+        android:layout_width="846dp"
+        android:layout_height="411dp"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/intervalMaxName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="20dp"
+            android:text="총 가로 길이" />
+
+        <EditText
+            android:id="@+id/intervalMaxNum"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="4dp"
+            android:hint="@string/interval_Max_Num"
+            android:inputType="text" />
+
+        <TextView
+            android:id="@+id/intervalGapName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="4dp"
+            android:textSize="20dp"
+            android:text="간격 감시 거리" />
+
+        <EditText
+            android:id="@+id/intervalGapNum"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginTop="0dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginBottom="16dp"
+            android:hint="@string/interval_Gap_Num"
+            android:inputType="text" />
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

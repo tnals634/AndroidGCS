@@ -29,6 +29,8 @@
     <string name="missionTransmission">임무전송</string>
     <string name="missionStart">임무시작</string>
     <string name="missionTermination">임무종료</string>
+    <string name="interval_Max_Num">총 가로 길이</string>
+    <string name="interval_Gap_Num">간격 감시 거리</string>
 
     <!--<string-array name="drone_connection_types">-->
         <!--<item>USB</item>-->
