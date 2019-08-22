@@ -938,6 +938,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
             start_B.setMap(naverMap);
             interval(max_Miter, gap_Number);
+            checkMiter(max_Miter,gap_Number);
         }
     }
 
@@ -983,10 +984,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         int color_polygon = Color.parseColor("#59FF0F00");
         interval_polygon.setColor(color_polygon);
         Log.d("point_interval", "A_angle : " + start_A.getAngle( ));
-        ++interval_count;
         interval_polygon.setMap(naverMap);
 
-        checkMiter(max_Miter,gap_Number);
     }
 
     public void interval_Disappear() {
@@ -1016,6 +1015,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void checkMiter(double max_Miter, double check_Miter) {
 
         double Mul_Check = 0;
+        int miterCount = 0;
 
         LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
         LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
@@ -1046,10 +1046,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                             max_Miter);
                     LatLong end_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
                             max_Miter);
-                    count_Miter.set(count, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
-                    count_Miter.set(count + 1, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
+                    count_Miter.set(miterCount, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
+                    count_Miter.set(miterCount + 1, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
                 }
-                count += 2;
+                miterCount += 2;
                 Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
                 Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
 
@@ -1070,16 +1070,17 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                             max_Miter);
                     LatLong end_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
                             max_Miter);
-                    count_Miter.set(count, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
-                    count_Miter.set(count + 1, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
+                    count_Miter.set(miterCount, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
+                    count_Miter.set(miterCount + 1, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
                 }
-                count += 2;
+                miterCount += 2;
                 Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
                 Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
             }
         }
         interval_polyline.setCoords(count_Miter);
         interval_polyline.setMap(naverMap);
+        ++interval_count;
     }
 
     public void intervalDialog(){
@@ -1170,13 +1171,15 @@ Mission intervalMission = new Mission();
 
 ///////////////////////////////////////////(고도 확인)//////////////////////////////////////////////
 
+    protected double mRecentAltitude = 0;
+
     public void updateAltitude() {
 
-        Altitude altitude = this.drone.getAttribute(AttributeType.ALTITUDE);
+        Altitude currentAltitude = this.drone.getAttribute(AttributeType.ALTITUDE);
+        mRecentAltitude = currentAltitude.getRelativeAltitude();
         TextView droneAltitude = (TextView) findViewById(R.id.altitude);
-        droneAltitude.setText("고도 " + Math.round(altitude.getTargetAltitude( )) + "m");
-
-        //Log.d("altitude", "고도2 " + Math.round(altitude.getTargetAltitude( )) + "m");
+        String straltitude = String.format("%.1f",mRecentAltitude);
+        droneAltitude.setText("고도 " + straltitude + "m");
     }
 
 ///////////////////////////////////////////(YAW값 확인)/////////////////////////////////////////////

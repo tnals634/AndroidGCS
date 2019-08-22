@@ -13,6 +13,7 @@ import com.MAVLink.ardupilotmega.msg_mag_cal_report;
 import com.MAVLink.ardupilotmega.msg_mount_configure;
 import com.MAVLink.ardupilotmega.msg_mount_status;
 import com.MAVLink.ardupilotmega.msg_radio;
+import com.MAVLink.common.msg_global_position_int;
 import com.MAVLink.common.msg_named_value_int;
 import com.MAVLink.common.msg_raw_imu;
 import com.MAVLink.common.msg_rc_channels_raw;
@@ -23,25 +24,6 @@ import com.MAVLink.common.msg_vfr_hud;
 import com.MAVLink.enums.MAV_MOUNT_MODE;
 import com.MAVLink.enums.MAV_SYS_STATUS_SENSOR;
 import com.github.zafarkhaja.semver.Version;
-
-import org.droidplanner.services.android.impl.communication.model.DataLink;
-import org.droidplanner.services.android.impl.core.MAVLink.MavLinkParameters;
-import org.droidplanner.services.android.impl.core.MAVLink.WaypointManager;
-import org.droidplanner.services.android.impl.core.MAVLink.command.doCmd.MavLinkDoCmds;
-import org.droidplanner.services.android.impl.core.drone.DroneInterfaces;
-import org.droidplanner.services.android.impl.core.drone.LogMessageListener;
-import org.droidplanner.services.android.impl.core.drone.autopilot.apm.variables.APMHeartBeat;
-import org.droidplanner.services.android.impl.core.drone.autopilot.generic.GenericMavLinkDrone;
-import org.droidplanner.services.android.impl.core.drone.variables.ApmModes;
-import org.droidplanner.services.android.impl.core.drone.variables.Camera;
-import org.droidplanner.services.android.impl.core.drone.variables.GuidedPoint;
-import org.droidplanner.services.android.impl.core.drone.variables.HeartBeat;
-import org.droidplanner.services.android.impl.core.drone.variables.Magnetometer;
-import org.droidplanner.services.android.impl.core.drone.variables.RC;
-import org.droidplanner.services.android.impl.core.drone.variables.calibration.AccelCalibration;
-import org.droidplanner.services.android.impl.core.drone.variables.calibration.MagnetometerCalibrationImpl;
-import org.droidplanner.services.android.impl.core.mission.MissionImpl;
-import org.droidplanner.services.android.impl.core.model.AutopilotWarningParser;
 import com.o3dr.services.android.lib.coordinate.LatLong;
 import com.o3dr.services.android.lib.coordinate.LatLongAlt;
 import com.o3dr.services.android.lib.drone.action.ControlActions;
@@ -61,6 +43,25 @@ import com.o3dr.services.android.lib.gcs.action.CalibrationActions;
 import com.o3dr.services.android.lib.model.AbstractCommandListener;
 import com.o3dr.services.android.lib.model.ICommandListener;
 import com.o3dr.services.android.lib.model.action.Action;
+
+import org.droidplanner.services.android.impl.communication.model.DataLink;
+import org.droidplanner.services.android.impl.core.MAVLink.MavLinkParameters;
+import org.droidplanner.services.android.impl.core.MAVLink.WaypointManager;
+import org.droidplanner.services.android.impl.core.MAVLink.command.doCmd.MavLinkDoCmds;
+import org.droidplanner.services.android.impl.core.drone.DroneInterfaces;
+import org.droidplanner.services.android.impl.core.drone.LogMessageListener;
+import org.droidplanner.services.android.impl.core.drone.autopilot.apm.variables.APMHeartBeat;
+import org.droidplanner.services.android.impl.core.drone.autopilot.generic.GenericMavLinkDrone;
+import org.droidplanner.services.android.impl.core.drone.variables.ApmModes;
+import org.droidplanner.services.android.impl.core.drone.variables.Camera;
+import org.droidplanner.services.android.impl.core.drone.variables.GuidedPoint;
+import org.droidplanner.services.android.impl.core.drone.variables.HeartBeat;
+import org.droidplanner.services.android.impl.core.drone.variables.Magnetometer;
+import org.droidplanner.services.android.impl.core.drone.variables.RC;
+import org.droidplanner.services.android.impl.core.drone.variables.calibration.AccelCalibration;
+import org.droidplanner.services.android.impl.core.drone.variables.calibration.MagnetometerCalibrationImpl;
+import org.droidplanner.services.android.impl.core.mission.MissionImpl;
+import org.droidplanner.services.android.impl.core.model.AutopilotWarningParser;
 import org.droidplanner.services.android.impl.utils.CommonApiUtils;
 
 import java.util.regex.Matcher;
@@ -113,10 +114,15 @@ public abstract class ArduPilot extends GenericMavLinkDrone {
     }
 
     protected void setAltitudeGroundAndAirSpeeds(double altitude, double groundSpeed, double airSpeed, double climb) {
+
+        /*
+        //절대고도 + 상대고도를 동시에 set하기 위하여 이 부분은 commnet 처리하고
+        //아래에 setAltitudeAbsoluteAndRelative 추가하여 따로 처리
+
         if (this.altitude.getAltitude() != altitude) {
             this.altitude.setAltitude(altitude);
             notifyDroneEvent(DroneInterfaces.DroneEventsType.ALTITUDE);
-        }
+        }*/
 
         if (speed.getGroundSpeed() != groundSpeed || speed.getAirSpeed() != airSpeed || speed.getVerticalSpeed() != climb) {
             speed.setGroundSpeed(groundSpeed);
@@ -125,6 +131,12 @@ public abstract class ArduPilot extends GenericMavLinkDrone {
 
             notifyDroneEvent(DroneInterfaces.DroneEventsType.SPEED);
         }
+    }
+
+    //2019-08-22 추가 상대고도, 절대고도 set
+    protected void setAltitudeAbsoluteAndRelative(double absoluteAlt, double relativeAlt){
+        this.altitude.setAltitudeAbsoluteAndRelative(absoluteAlt,relativeAlt);
+        notifyDroneEvent(DroneInterfaces.DroneEventsType.ALTITUDE);
     }
 
     @Override
@@ -455,6 +467,14 @@ public abstract class ArduPilot extends GenericMavLinkDrone {
                 case msg_mag_cal_progress.MAVLINK_MSG_ID_MAG_CAL_PROGRESS:
                 case msg_mag_cal_report.MAVLINK_MSG_ID_MAG_CAL_REPORT:
                     getMagnetometerCalibration().processCalibrationMessage(message);
+                    break;
+
+                //2019-08-22 추가 alt (절대고도), relative_alt (상대고도) 값 가져오기 위함
+                case msg_global_position_int.MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+                    msg_global_position_int alt = (msg_global_position_int)message;
+                    if(alt != null){
+                        setAltitudeAbsoluteAndRelative((double) alt.alt / 1000, (double) alt.relative_alt / 1000);
+                    }
                     break;
 
                 default:
