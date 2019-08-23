@@ -41,6 +41,7 @@ import com.naver.maps.map.util.FusedLocationSource;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.ControlApi;
+import com.o3dr.android.client.apis.MissionApi;
 import com.o3dr.android.client.apis.VehicleApi;
 import com.o3dr.android.client.interfaces.DroneListener;
 import com.o3dr.android.client.interfaces.LinkListener;
@@ -383,6 +384,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 updateYAW( );
                 updateAltitudeSetting( );
                 updateDroneMode( );
+                missionTransmissionButton();
+                updateClearButton(polylineOverlay);
                 break;
 
             case AttributeEvent.GPS_POSITION:
@@ -664,6 +667,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             public void onClick(View v) {
                 flight_path.clear( );
                 polyline.setMap(null);
+                interval_Disappear( );
             }
         });
     }
@@ -861,6 +865,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     int count = 0;
     SimpleTextAdapter adapter;
 
+    //recycle에 나오게 설정
     protected void alertUser(String message) {
 
         Toast.makeText(getApplicationContext( ), message, Toast.LENGTH_SHORT).show( );
@@ -879,6 +884,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     }
 
+    //recycle 시간 설정
     public void elapsedTime() {
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
@@ -919,6 +925,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     PolygonOverlay interval_polygon = new PolygonOverlay( );
     int interval_count = 0;
 
+    //pointA 마커 생성
     public void interval_PointA(LatLng latLng, double max_Miter, double gap_Number) {
 
         start_A.setPosition(latLng);
@@ -929,6 +936,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         pointB(max_Miter, gap_Number);
     }
 
+    //pointB 마커 생성
     public void interval_PointB(LatLng latLng, double max_Miter, double gap_Number) {
 
         if (interval_count == 0) {
@@ -937,24 +945,27 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             start_B.setHeight(80);
             start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
             start_B.setMap(naverMap);
-            interval(max_Miter, gap_Number);
+            interval(max_Miter);
             checkMiter(max_Miter,gap_Number);
         }
     }
 
+    //pointA 생성할 곳 클릭
     public void pointA(double max_Miter, double gap_Number) {
         naverMap.setOnMapClickListener((PointF, latLng) ->
                 interval_PointA(latLng, max_Miter, gap_Number)
         );
     }
 
+    //pointB 생성할 곳 클릭
     public void pointB(double max_Miter,double gap_Number) {
         naverMap.setOnMapClickListener((PointF, latLng) ->
                 interval_PointB(latLng, max_Miter, gap_Number)
         );
     }
 
-    public void interval(double max_Miter, double gap_Number) {
+    //간격감시 polygon 생성
+    public void interval(double max_Miter) {
 
         LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
         LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
@@ -986,15 +997,22 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Log.d("point_interval", "A_angle : " + start_A.getAngle( ));
         interval_polygon.setMap(naverMap);
 
+        alertUser("드론 가로길이(m) : " + max_Miter);
+
     }
 
+    //다른 모드 버튼 클릭시 간격감시 제거
+
     public void interval_Disappear() {
+
+        //간격감시 제거 후에 맵을 눌렀을 시 나오지 않게 함
         naverMap.setOnMapClickListener((PointF, latLng) ->
                 disappear(latLng)
         );
         disappear(start_A.getPosition( ));
     }
 
+    //간격감시때 그린 polygone과 polyline을 제거
     public void disappear(LatLng latLng) {
 
         start_A.setMap(null);
@@ -1012,6 +1030,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     ArrayList<LatLng> count_Miter = new ArrayList<>( );
     PolylineOverlay interval_polyline = new PolylineOverlay( );
 
+    //설정 간격에 따른 polyline 그림
     public void checkMiter(double max_Miter, double check_Miter) {
 
         double Mul_Check = 0;
@@ -1078,11 +1097,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
             }
         }
+        alertUser("드론 간격거리(m) : " + check_Miter);
         interval_polyline.setCoords(count_Miter);
         interval_polyline.setMap(naverMap);
         ++interval_count;
     }
 
+    //가로길이와 간격거리 설정
     public void intervalDialog(){
 
         View dialogView = getLayoutInflater().inflate(R.layout.activity_sub,null);
@@ -1117,16 +1138,95 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
 //////////////////////////////////(간격감시 모드시 auto모드 작동)///////////////////////////////////
-Mission intervalMission = new Mission();
 
+    Mission intervalMission = new Mission();
     public void autoInterval(){
-
         Waypoint intervalWaypoint = new Waypoint();
+
         for(int index = 0; index<count_Miter.size();index++) {
-            intervalWaypoint.setCoordinate(new LatLongAlt(count_Miter.get(index).latitude,count_Miter.get(index).longitude,altitude_drone));
-            intervalMission.addMissionItem(index,intervalWaypoint);
+            intervalWaypoint.setCoordinate(new LatLongAlt(count_Miter.get(index).latitude,
+                    count_Miter.get(index).longitude,altitude_drone));
+            intervalWaypoint.setDelay(1);
+            intervalMission.addMissionItem(index, intervalWaypoint);
             Log.d("interval","mission : " + intervalMission);
         }
+        MissionApi.getApi(this.drone).setMission(intervalMission, true);
+        alertUser("임무 전송 완료.");
+    }
+
+    public void interval_go(){
+
+        VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_AUTO, new SimpleCommandListener( ) {
+
+            @Override
+            public void onSuccess() {
+                alertUser("임무를 시작합니다.");
+                alertUser("AUTO 모드로 전환");
+            }
+
+            @Override
+            public void onError(int executionError) {
+                alertUser("AUTO 모드로 전환할 수 없습니다.");
+            }
+
+            @Override
+            public void onTimeout() {
+                alertUser("AUTO 모드로 전환할 수 없습니다.");
+            }
+        });
+    }
+
+    public void interval_End(){
+        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+
+        if (vehicleState.getVehicleMode( ) == VehicleMode.COPTER_AUTO) {
+            VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_LOITER, new SimpleCommandListener( ) {
+
+                @Override
+                public void onSuccess() {
+                    alertUser("임무를 중지합니다.");
+                }
+
+                @Override
+                public void onError(int executionError) {
+                    alertUser("LOITER 모드로 전환할 수 없습니다.");
+                }
+
+                @Override
+                public void onTimeout() {
+                    alertUser("LOITER 모드로 전환할 수 없습니다.");
+                }
+            });
+        }
+    }
+
+    //임무 전송 버튼
+    public void missionTransmissionButton(){
+
+        Button mission_complete = (Button) findViewById(R.id.complete);
+
+        mission_complete.setOnClickListener(new Button.OnClickListener( ) {
+            @Override
+            public void onClick(View v) {
+
+                if(mission_complete.getText().equals("임무전송")){
+
+                    mission_complete.setText("임무시작");
+                    autoInterval();
+                }
+                else if(mission_complete.getText().equals("임무시작")){
+
+                    mission_complete.setText("임무종료");
+                    interval_go();
+                }
+                else if(mission_complete.getText().equals("임무종료")){
+
+                    mission_complete.setText("임무전송");
+                    interval_End();
+                }
+
+            }
+        });
 
     }
 
@@ -1233,7 +1333,6 @@ Mission intervalMission = new Mission();
         polylineOverlay.setCoords(flight_path);
         polylineOverlay.setColor(Color.MAGENTA);
         polylineOverlay.setMap(naverMap);
-        updateClearButton(polylineOverlay); // clear 버튼
 
         naverMap.setLocationSource(locationSource);
         naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
