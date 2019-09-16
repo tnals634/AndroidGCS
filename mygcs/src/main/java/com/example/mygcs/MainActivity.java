@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private int droneType = Type.TYPE_UNKNOWN;
     private final Handler handler = new Handler( );
 
-    Marker marker = new Marker( );
+    Marker drone_marker = new Marker( );
 
     Marker guideMarker = new Marker( );
 
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     double altitude_drone = 3;
 
     ArrayList<LatLng> flight_path = new ArrayList<>( );
-    PolylineOverlay polylineOverlay = new PolylineOverlay( );
+    PolylineOverlay drone_polyline = new PolylineOverlay( );
 
     Context context = this;
 
@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     public void updateDistanceFromTarget() {
         LatLng gMarker = new LatLng(guideMarker.getPosition( ).latitude, guideMarker.getPosition( ).longitude);
-        LatLng dMarker = new LatLng(marker.getPosition( ).latitude, marker.getPosition( ).longitude);
+        LatLng dMarker = new LatLng(drone_marker.getPosition( ).latitude, drone_marker.getPosition( ).longitude);
         double btween = gMarker.distanceTo(dMarker);
 
         if (btween <= 1) {
@@ -385,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 updateAltitudeSetting( );
                 updateDroneMode( );
                 missionTransmissionButton();
-                updateClearButton(polylineOverlay);
+                updateClearButton(drone_polyline);
                 break;
 
             case AttributeEvent.GPS_POSITION:
@@ -673,7 +673,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         });
     }
 
-///////////////////////////////////////////(altitude setting 버튼)////////////////////////////////////
+///////////////////////////////////////////(altitude setting 버튼)//////////////////////////////////
 
     public void updateAltitudeSetting() {
 
@@ -732,6 +732,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         final Button flightRoutes = (Button) findViewById(R.id.flightRoutes); // 경로비행
         final Button intervalMonitoring = (Button) findViewById(R.id.intervalMonitoring); // 간격 감시
         final Button areaMonitoring = (Button) findViewById(R.id.areaMonitoring); // 면적 감시
+        final Button mission_complete = (Button) findViewById(R.id.complete); // 간격 감시 후 임무 전송 버튼
 
         modeSelete.setOnClickListener(new Button.OnClickListener( ) {
             @Override
@@ -780,6 +781,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             public void onClick(View v) {
                 modeSelete.setText("간격감시");
                 intervalDialog();
+                mission_complete.setVisibility(v.VISIBLE);
                 basicMode.setVisibility(v.INVISIBLE);
                 flightRoutes.setVisibility(v.INVISIBLE);
                 intervalMonitoring.setVisibility(v.INVISIBLE);
@@ -871,7 +873,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         Toast.makeText(getApplicationContext( ), message, Toast.LENGTH_SHORT).show( );
         Log.d(TAG, message);
-        list.add(" ★ " + message + " ");
+        list.add(" ♬ " + message + " ");
         startTime = SystemClock.elapsedRealtime( );
         timeCheck.add(startTime);
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
@@ -1029,7 +1031,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         interval_count = 0;
         intervalMission.clear();
 
+        mission_complete.setVisibility(View.INVISIBLE);
         mission_complete.setText("임무전송");
+        alertUser("임무 제거");
     }
 
 ////////////////////////////////////(간격 감시 기능)////////////////////////////////////////////////
@@ -1218,7 +1222,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         }
     }
 
-    //중지후 재시작시 중지전전MISSION을 수행
+    //중지후 재시작시 중지전 전MISSION을 수행
     public void interval_Restart(){
 
         State vehicleState = this.drone.getAttribute(AttributeType.STATE);
@@ -1266,7 +1270,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                         interval_go( );
                     } else if (mission_complete.getText( ).equals("임무중지")) {
 
-                        if (marker.getPosition( ) == count_Miter.get(count_Miter.size( ) - 1)) {
+                        if (drone_marker.getPosition( ) == count_Miter.get(count_Miter.size( ) - 1)) {
                             mission_complete.setText("임무전송");
                         } else {
                             mission_complete.setText("임무재시작");
@@ -1283,7 +1287,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         });
     }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////(드론 모드 변경)//////////////////////////////////////////
 
     public void onFlightModeSelected(View view) {
         VehicleMode vehicleMode = (VehicleMode) this.modeSelector.getSelectedItem( );
@@ -1369,23 +1373,23 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         float angle = updateYAW( );
 
-        marker.setMap(null);//그 전 마커들 지워줌
-        marker.setPosition(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
-        marker.setAngle(angle); // 드론을 돌리면 yaw값이 변경되며 마커 모양을 변경시켜줌
-        marker.setIcon(OverlayImage.fromResource(R.drawable.next));
-        marker.setWidth(80);
-        marker.setHeight(330);
-        marker.setAnchor(new PointF(0.5F, 0.9F));
-        marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
+        drone_marker.setMap(null);//그 전 마커들 지워줌
+        drone_marker.setPosition(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
+        drone_marker.setAngle(angle); // 드론을 돌리면 yaw값이 변경되며 마커 모양을 변경시켜줌
+        drone_marker.setIcon(OverlayImage.fromResource(R.drawable.next));
+        drone_marker.setWidth(80);
+        drone_marker.setHeight(330);
+        drone_marker.setAnchor(new PointF(0.5F, 0.9F));
+        drone_marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
 
         updateMapLock(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( ))); // 맵 잠금 / 이동 버튼
 
         Collections.addAll(
                 flight_path,
                 new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
-        polylineOverlay.setCoords(flight_path);
-        polylineOverlay.setColor(Color.MAGENTA);
-        polylineOverlay.setMap(naverMap);
+        drone_polyline.setCoords(flight_path);
+        drone_polyline.setColor(Color.MAGENTA);
+        drone_polyline.setMap(naverMap);
 
         naverMap.setLocationSource(locationSource);
         naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
@@ -1395,13 +1399,21 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     @Override
     public void onMapReady(@NonNull NaverMap naverMap) {
         ConnectionParameter params = ConnectionParameter.newUdpConnection(null);
+
         this.drone.connect(params);
+
         this.naverMap = naverMap;
+
         UiSettings uiSettings = naverMap.getUiSettings( );
+
         uiSettings.setZoomControlEnabled(false);
+
         uiSettings.setLogoMargin(16, 500, 1200, 1);
+
         uiSettings.setScaleBarEnabled(false);
+
         updateMapTypeButton( ); // 지도 타입 변경 버튼
+
         updateIntellectualMap( ); // 지적도 on / off 버튼
     }
 }
