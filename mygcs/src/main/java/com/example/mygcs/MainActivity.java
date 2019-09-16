@@ -1416,4 +1416,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         updateIntellectualMap( ); // 지적도 on / off 버튼
     }
+
+    // branch 새로 생성
 }
