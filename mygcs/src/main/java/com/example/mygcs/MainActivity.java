@@ -107,6 +107,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     int mCountTime = 0;
     SimpleTextAdapter mAdapter;
 
+    PolygonOverlay mIntervalPolygon = new PolygonOverlay( );
+    Marker[][] mIntervalMarkerAB = new Marker[2][2]; // mIntervalMarkerAB[0][0] = start_A, mIntervalMarkerAB[0][1] = sub_A, mIntervalMarkerAB[1][0] = start_B, mIntervalMarkerAB[1][1] = sub_B
+    int mIntervalCount = 0;
+
+    ArrayList<LatLng> mCountMeter = new ArrayList<>( );
+    PolylineOverlay mIntervalPolyline = new PolylineOverlay( );
+    
+    double mIntervalMaxMeter;
+    int mIndex;
+    Mission mIntervalMission = new Mission();
+
+    protected double mRecentAltitude = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "Start mainActivity");
@@ -676,7 +689,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             public void onClick(View v) {
                 mFlightPath.clear( );
                 polyline.setMap(null);
-                removeInterval( );
+                removeAll( );
             }
         });
     }
@@ -768,7 +781,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 btnFlightRoutes.setVisibility(v.INVISIBLE);
                 btnIntervalMonitoring.setVisibility(v.INVISIBLE);
                 btnAreaMonitoring.setVisibility(v.INVISIBLE);
-                removeInterval( );
+                removeAll( );
             }
         });
 
@@ -780,7 +793,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 btnFlightRoutes.setVisibility(v.INVISIBLE);
                 btnIntervalMonitoring.setVisibility(v.INVISIBLE);
                 btnAreaMonitoring.setVisibility(v.INVISIBLE);
-                removeInterval( );
+                removeAll( );
             }
         });
 
@@ -806,7 +819,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 btnFlightRoutes.setVisibility(v.INVISIBLE);
                 btnIntervalMonitoring.setVisibility(v.INVISIBLE);
                 btnAreaMonitoring.setVisibility(v.INVISIBLE);
-                removeInterval( );
+                removeAll( );
             }
         });
     }
@@ -922,115 +935,148 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
 ////////////////////////////////////////(A,B지점 지정 )/////////////////////////////////////////////
 
-    Marker start_A = new Marker( );
-    Marker sub_A = new Marker( );
-    Marker start_B = new Marker( );
-    Marker sub_B = new Marker( );
-    PolygonOverlay interval_polygon = new PolygonOverlay( );
-    int interval_count = 0;
-
+//    Marker start_A = new Marker( );
+//    Marker sub_A = new Marker( );
+//    Marker start_B = new Marker( );
+//    Marker sub_B = new Marker( );
     //pointA 마커 생성
-    public void interval_PointA(LatLng latLng, double max_Miter, double gap_Number) {
+    public void IntervalPointA(LatLng latLng, double maxMeter, double gapMeter) {
 
-        start_A.setPosition(latLng);
-        start_A.setWidth(80);
-        start_A.setHeight(80);
-        start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
-        start_A.setMap(mNaverMap);
-        pointB(max_Miter, gap_Number);
-        interval_max = max_Miter;
+//        start_A.setPosition(latLng);
+//        start_A.setWidth(80);
+//        start_A.setHeight(80);
+//        start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
+//        start_A.setMap(mNaverMap);
+        
+        mIntervalMarkerAB[0][0].setPosition(latLng);
+        mIntervalMarkerAB[0][0].setWidth(80);
+        mIntervalMarkerAB[0][0].setHeight(80);
+        mIntervalMarkerAB[0][0].setIcon(OverlayImage.fromResource(R.drawable.a_point));
+        mIntervalMarkerAB[0][0].setMap(mNaverMap);
+        pointB(maxMeter, gapMeter);
+        mIntervalMaxMeter = maxMeter;
     }
 
     //pointB 마커 생성
-    public void interval_PointB(LatLng latLng, double max_Miter, double gap_Number) {
+    public void intervalPointB(LatLng latLng, double maxMeter, double gapMeter) {
 
-        if (interval_count == 0) {
-            start_B.setPosition(latLng);
-            start_B.setWidth(80);
-            start_B.setHeight(80);
-            start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
-            start_B.setMap(mNaverMap);
-            interval(max_Miter);
-            checkMiter(max_Miter,gap_Number);
+        if (mIntervalCount == 0) {
+//            start_B.setPosition(latLng);
+//            start_B.setWidth(80);
+//            start_B.setHeight(80);
+//            start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
+//            start_B.setMap(mNaverMap);
+
+            mIntervalMarkerAB[1][0].setPosition(latLng);
+            mIntervalMarkerAB[1][0].setWidth(80);
+            mIntervalMarkerAB[1][0].setHeight(80);
+            mIntervalMarkerAB[1][0].setIcon(OverlayImage.fromResource(R.drawable.b_point));
+            mIntervalMarkerAB[1][0].setMap(mNaverMap);
+            interval(maxMeter);
+            checkMiter(maxMeter,gapMeter);
         }
     }
 
     //pointA 생성할 곳 클릭
-    public void pointA(double max_Miter, double gap_Number) {
+    public void pointA(double maxMeter, double gapMeter) {
         mNaverMap.setOnMapClickListener((PointF, latLng) ->
-                interval_PointA(latLng, max_Miter, gap_Number)
+                IntervalPointA(latLng, maxMeter, gapMeter)
         );
     }
 
     //pointB 생성할 곳 클릭
-    public void pointB(double max_Miter,double gap_Number) {
+    public void pointB(double maxMeter,double gapMeter) {
         mNaverMap.setOnMapClickListener((PointF, latLng) ->
-                interval_PointB(latLng, max_Miter, gap_Number)
+                intervalPointB(latLng, maxMeter, gapMeter)
         );
     }
 
     //간격감시 polygon 생성
-    public void interval(double max_Miter) {
+    public void interval(double maxMeter) {
 
-        LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
-        LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
-        double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
+        LatLong latLongA = new LatLong(mIntervalMarkerAB[0][0].getPosition( ).latitude, mIntervalMarkerAB[0][0].getPosition( ).longitude);
+        LatLong latLongB = new LatLong(mIntervalMarkerAB[1][0].getPosition( ).latitude, mIntervalMarkerAB[1][0].getPosition( ).longitude);
+        double degree = MathUtils.getHeadingFromCoordinates(latLongA, latLongB);
 
-        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90, max_Miter);
+        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(latLongA, degree + 90, maxMeter);
         LatLng position_subA = new LatLng(positionA.getLatitude( ), positionA.getLongitude( ));
-        sub_A.setPosition(position_subA);
-        sub_A.setWidth(80);
-        sub_A.setHeight(80);
-        sub_A.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
-        sub_A.setMap(mNaverMap);
-        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90, max_Miter);
-        LatLng position_subB = new LatLng(positionB.getLatitude( ), positionB.getLongitude( ));
-        sub_B.setPosition(position_subB);
-        sub_B.setWidth(80);
-        sub_B.setHeight(80);
-        sub_B.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
-        sub_B.setMap(mNaverMap);
+//        sub_A.setPosition(position_subA);
+//        sub_A.setWidth(80);
+//        sub_A.setHeight(80);
+//        sub_A.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+//        sub_A.setMap(mNaverMap);
 
-        interval_polygon.setCoords(Arrays.asList(
-                start_A.getPosition( ),
-                sub_A.getPosition( ),
-                sub_B.getPosition( ),
-                start_B.getPosition( )
+        mIntervalMarkerAB[0][1].setPosition(position_subA);
+        mIntervalMarkerAB[0][1].setWidth(80);
+        mIntervalMarkerAB[0][1].setHeight(80);
+        mIntervalMarkerAB[0][1].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+        mIntervalMarkerAB[0][1].setMap(mNaverMap);
+        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(latLongB, degree + 90, maxMeter);
+        LatLng position_subB = new LatLng(positionB.getLatitude( ), positionB.getLongitude( ));
+//        sub_B.setPosition(position_subB);
+//        sub_B.setWidth(80);
+//        sub_B.setHeight(80);
+//        sub_B.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+//        sub_B.setMap(mNaverMap);
+
+        mIntervalMarkerAB[1][1].setPosition(position_subB);
+        mIntervalMarkerAB[1][1].setWidth(80);
+        mIntervalMarkerAB[1][1].setHeight(80);
+        mIntervalMarkerAB[1][1].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+        mIntervalMarkerAB[1][1].setMap(mNaverMap);
+
+        mIntervalPolygon.setCoords(Arrays.asList(
+//                start_A.getPosition( ),
+//                sub_A.getPosition( ),
+//                sub_B.getPosition( ),
+//                start_B.getPosition( )
+
+                mIntervalMarkerAB[0][0].getPosition( ),
+                mIntervalMarkerAB[0][1].getPosition( ),
+                mIntervalMarkerAB[1][1].getPosition( ),
+                mIntervalMarkerAB[1][0].getPosition( )
         ));
         int color_polygon = Color.parseColor("#59FF0F00");
-        interval_polygon.setColor(color_polygon);
-        Log.d("point_interval", "A_angle : " + start_A.getAngle( ));
-        interval_polygon.setMap(mNaverMap);
+        mIntervalPolygon.setColor(color_polygon);
+        Log.d("point_interval", "A_angle : " + mIntervalMarkerAB[0][0].getAngle( ));
+        mIntervalPolygon.setMap(mNaverMap);
 
-        alertUser("드론 가로길이(m) : " + max_Miter);
+        alertUser("드론 가로길이(m) : " + maxMeter);
 
     }
 
     //다른 모드 버튼 클릭시 간격감시 제거
 
-    public void removeInterval() {
+    public void removeAll() {
 
         //간격감시 제거 후에 맵을 눌렀을 시 나오지 않게 함
         mNaverMap.setOnMapClickListener((PointF, latLng) ->
-                disappear(latLng)
+                removeInterval(latLng)
         );
-        disappear(start_A.getPosition( ));
+        removeInterval(mIntervalMarkerAB[0][0].getPosition( ));
     }
 
     //간격감시때 그린 polygone과 polyline을 제거
-    public void disappear(LatLng latLng) {
+    public void removeInterval(LatLng latLng) {
 
         Button btnCompleteMission = (Button) findViewById(R.id.complete);
 
-        start_A.setMap(null);
-        start_B.setMap(null);
-        sub_A.setMap(null);
-        sub_B.setMap(null);
-        interval_polygon.setMap(null);
-        interval_polyline.setMap(null);
-        count_Miter.clear();
-        interval_count = 0;
-        intervalMission.clear();
+//        start_A.setMap(null);
+//        start_B.setMap(null);
+//        sub_A.setMap(null);
+//        sub_B.setMap(null);
+        for(int i=0;i<2;i++)
+        {
+            for(int j=0;j<2;j++)
+            {
+                mIntervalMarkerAB[i][j].setMap(null);
+            }
+        }
+        mIntervalPolygon.setMap(null);
+        mIntervalPolyline.setMap(null);
+        mCountMeter.clear();
+        mIntervalCount = 0;
+        mIntervalMission.clear();
 
         btnCompleteMission.setVisibility(View.INVISIBLE);
         btnCompleteMission.setText("임무전송");
@@ -1039,82 +1085,85 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
 ////////////////////////////////////(간격 감시 기능)////////////////////////////////////////////////
 
-    ArrayList<LatLng> count_Miter = new ArrayList<>( );
-    PolylineOverlay interval_polyline = new PolylineOverlay( );
-
     //설정 간격에 따른 polyline 그림
-    public void checkMiter(double max_Miter, double check_Miter) {
+    public void checkMiter(double maxMeter, double check_Miter) {
 
-        double Mul_Check = 0;
-        int miterCount = 0;
+        double checkMul = 0;
+        int meterCount = 0;
+        
+        LatLong[][] latLongAB = new LatLong[2][2];
+        for(int i = 0; i < 2; i++){
+            for(int j = 0; j < 2; j++){
+                latLongAB[i][j] = new LatLong(mIntervalMarkerAB[i][j].getPosition().latitude, mIntervalMarkerAB[i][j].getPosition().longitude);
+            }
+        }
+//        latLongAB[0][0] = new LatLong(mIntervalMarkerAB[0][0].getPosition().latitude, mIntervalMarkerAB[0][0].getPosition().longitude); //latLongA(startA)
+//        latLongAB[0][1] = new LatLong(mIntervalMarkerAB[0][1].getPosition().latitude, mIntervalMarkerAB[0][1].getPosition().longitude); //end_A(sub_A)
+//        latLongAB[1][0] = new LatLong(mIntervalMarkerAB[1][0].getPosition().latitude, mIntervalMarkerAB[1][0].getPosition().longitude); //latLongB(startB)
+//        latLongAB[1][1] = new LatLong(mIntervalMarkerAB[1][1].getPosition().latitude, mIntervalMarkerAB[1][1].getPosition().longitude); //end_B(sub_B)
 
-        LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
-        LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
-        LatLong end_A = new LatLong(sub_A.getPosition().latitude,sub_A.getPosition().longitude);
-        LatLong end_B = new LatLong(sub_B.getPosition().latitude,sub_B.getPosition().longitude);
+        Log.d("miterLatLng","start A : " + mIntervalMarkerAB[0][0].getPosition());
+        Log.d("miterLatLng","start B : " + mIntervalMarkerAB[1][0].getPosition());
+        double degree = MathUtils.getHeadingFromCoordinates(latLongAB[0][0],latLongAB[1][0]);
 
-        Log.d("miterLatLng","start A : " + start_A.getPosition());
-        Log.d("miterLatLng","start B : " + start_B.getPosition());
-        double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
+        LatLong startPointA;
+        LatLong startPointB;
 
-        LatLong startPoint_A;
-        LatLong startPoint_B;
+        for (int countCheckMeter = 0; checkMul < maxMeter; countCheckMeter++) {
 
-        for (int count_CheckMiter = 0; Mul_Check < max_Miter; count_CheckMiter++) {
+            checkMul = check_Miter * countCheckMeter;
 
-            Mul_Check = check_Miter * count_CheckMiter;
+            if ((countCheckMeter == 0) || (countCheckMeter % 2 == 0)) {
+                startPointA = MathUtils.newCoordFromBearingAndDistance(latLongAB[0][0], degree + 90,
+                        checkMul);
 
-            if ((count_CheckMiter == 0) || (count_CheckMiter % 2 == 0)) {
-                startPoint_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
-                        Mul_Check);
-
-                startPoint_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
-                        Mul_Check);
-
-                Collections.addAll(
-                        count_Miter,
-                        new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )),
-                        new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( ))
-                );
-                if (Mul_Check >= max_Miter) {
-                    count_Miter.set(miterCount, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
-                    count_Miter.set(miterCount + 1, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
-                }
-                miterCount += 2;
-                Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
-                Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
-
-            } else if (count_CheckMiter % 2 != 0) {
-                startPoint_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
-                        Mul_Check);
-
-                startPoint_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
-                        Mul_Check);
+                startPointB = MathUtils.newCoordFromBearingAndDistance(latLongAB[1][0], degree + 90,
+                        checkMul);
 
                 Collections.addAll(
-                        count_Miter,
-                        new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )),
-                        new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( ))
+                        mCountMeter,
+                        new LatLng(startPointA.getLatitude( ), startPointA.getLongitude( )),
+                        new LatLng(startPointB.getLatitude( ), startPointB.getLongitude( ))
                 );
-                if (Mul_Check >= max_Miter) {
-                    count_Miter.set(miterCount, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
-                    count_Miter.set(miterCount + 1, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
+                if (checkMul >= maxMeter) {
+                    mCountMeter.set(meterCount, new LatLng(latLongAB[0][1].getLatitude( ), latLongAB[0][1].getLongitude( )));
+                    mCountMeter.set(meterCount + 1, new LatLng(latLongAB[1][1].getLatitude( ), latLongAB[1][1].getLongitude( )));
                 }
-                miterCount += 2;
-                Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
-                Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
+                meterCount += 2;
+                Log.d("miter1", "pointA : " + new LatLng(startPointA.getLatitude( ), startPointA.getLongitude( )));
+                Log.d("miter1", "pointB : " + new LatLng(startPointB.getLatitude( ), startPointB.getLongitude( )));
+
+            } else if (countCheckMeter % 2 != 0) {
+                startPointA = MathUtils.newCoordFromBearingAndDistance(latLongAB[0][0], degree + 90,
+                        checkMul);
+
+                startPointB = MathUtils.newCoordFromBearingAndDistance(latLongAB[1][0], degree + 90,
+                        checkMul);
+
+                Collections.addAll(
+                        mCountMeter,
+                        new LatLng(startPointB.getLatitude( ), startPointB.getLongitude( )),
+                        new LatLng(startPointA.getLatitude( ), startPointA.getLongitude( ))
+                );
+                if (checkMul >= maxMeter) {
+                    mCountMeter.set(meterCount, new LatLng(latLongAB[1][1].getLatitude( ), latLongAB[1][1].getLongitude( )));
+                    mCountMeter.set(meterCount + 1, new LatLng(latLongAB[0][1].getLatitude( ), latLongAB[0][1].getLongitude( )));
+                }
+                meterCount += 2;
+                Log.d("miter1", "pointB : " + new LatLng(startPointB.getLatitude( ), startPointB.getLongitude( )));
+                Log.d("miter1", "pointA : " + new LatLng(startPointA.getLatitude( ), startPointA.getLongitude( )));
             }
         }
         alertUser("드론 간격거리(m) : " + check_Miter);
-        interval_polyline.setCoords(count_Miter);
-        interval_polyline.setMap(mNaverMap);
-        ++interval_count;
+        mIntervalPolyline.setCoords(mCountMeter);
+        mIntervalPolyline.setMap(mNaverMap);
+        ++mIntervalCount;
 
-        for(int i = 0; i<count_Miter.size(); i++){
-            Log.d("miterLatLng", "count_Miter : " + count_Miter.get(i));
+        for(int i = 0; i<mCountMeter.size(); i++){
+            Log.d("miterLatLng", "mCountMeter : " + mCountMeter.get(i));
         }
-        Log.d("miterLatLng","count_Miter start A : " + count_Miter.get(0));
-        Log.d("miterLatLng","count_Miter start B : " + count_Miter.get(1));
+        Log.d("miterLatLng","mCountMeter start A : " + mCountMeter.get(0));
+        Log.d("miterLatLng","mCountMeter start B : " + mCountMeter.get(1));
     }
 
     //가로길이와 간격거리 설정
@@ -1153,31 +1202,26 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
 //////////////////////////////////(간격감시 모드시 auto모드 작동)///////////////////////////////////
 
-    double interval_max;
-
-    int index;
-    Mission intervalMission = new Mission();
-
     //AUTO 모드 변환전 MISSION에 WAYPOINT전송
     public void autoInterval(){
 
-
-        for(index = 0; index<count_Miter.size();index++) {
+        for(mIndex = 0; mIndex < mCountMeter.size(); mIndex++) {
             Waypoint intervalWaypoint = new Waypoint();
 
-            intervalWaypoint.setCoordinate(new LatLongAlt(count_Miter.get(index).latitude, count_Miter.get(index).longitude, mRecentAltitude));
+            intervalWaypoint.setCoordinate(new LatLongAlt(mCountMeter.get(mIndex).latitude, mCountMeter.get(mIndex).longitude, mRecentAltitude));
             intervalWaypoint.setDelay(1);
-            intervalMission.addMissionItem(intervalWaypoint);
-            Log.d("interval1","index : " + index);
-            Log.d("interval1","mission : " + intervalMission.getMissionItem(index));
+            mIntervalMission.addMissionItem(intervalWaypoint);
+            
+            Log.d("interval1","mIndex : " + mIndex);
+            Log.d("interval1","mission : " + mIntervalMission.getMissionItem(mIndex));
             Log.d("interval1","wayPoint : " + intervalWaypoint);
         }
-        MissionApi.getApi(this.mDrone).setMission(intervalMission, true);
+        MissionApi.getApi(this.mDrone).setMission(mIntervalMission, true);
 
     }
 
     //받은 MISSION으로 AUTO모드로 전환
-    public void interval_go(){
+    public void startInterval(){
 
         VehicleApi.getApi(this.mDrone).setVehicleMode(VehicleMode.COPTER_AUTO, new SimpleCommandListener( ) {
 
@@ -1199,7 +1243,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
     //AUTO모드를 LOITER로 변환 / 멈춤
-    public void interval_End(){
+    public void terminateInterval(){
         State vehicleState = this.mDrone.getAttribute(AttributeType.STATE);
 
         if (vehicleState.getVehicleMode( ) == VehicleMode.COPTER_AUTO) {
@@ -1224,7 +1268,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
     //중지후 재시작시 중지전 전MISSION을 수행
-    public void interval_Restart(){
+    public void restartInterval(){
 
         State vehicleState = this.mDrone.getAttribute(AttributeType.STATE);
 
@@ -1251,14 +1295,13 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     //임무 전송 버튼
     public void missionTransmissionButton(){
-
         Button btnCompleteMission = (Button) findViewById(R.id.complete);
 
         btnCompleteMission.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
 
-                if (count_Miter.size( ) > 0) {
+                if (mCountMeter.size( ) > 0) {
                     if (btnCompleteMission.getText( ).equals("임무전송")) {
 
                         btnCompleteMission.setText("임무시작");
@@ -1268,19 +1311,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                     } else if (btnCompleteMission.getText( ).equals("임무시작")) {
 
                         btnCompleteMission.setText("임무중지");
-                        interval_go( );
+                        startInterval( );
                     } else if (btnCompleteMission.getText( ).equals("임무중지")) {
 
-                        if (mDroneMarker.getPosition( ) == count_Miter.get(count_Miter.size( ) - 1)) {
+                        if (mDroneMarker.getPosition( ) == mCountMeter.get(mCountMeter.size( ) - 1)) {
                             btnCompleteMission.setText("임무전송");
                         } else {
                             btnCompleteMission.setText("임무재시작");
                         }
-                        interval_End( );
+                        terminateInterval( );
                     } else if (btnCompleteMission.getText( ).equals("임무재시작")) {
 
                         btnCompleteMission.setText("임무중지");
-                        interval_Restart( );
+                        restartInterval( );
                     }
 
                 }
@@ -1328,8 +1371,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
 ///////////////////////////////////////////(고도 확인)//////////////////////////////////////////////
-
-    protected double mRecentAltitude = 0;
 
     public void updateAltitude() {
 
