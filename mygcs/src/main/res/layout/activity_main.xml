@@ -23,125 +23,79 @@
         </FrameLayout>
 
         <LinearLayout
+            android:id="@+id/linearLayout7"
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:background="#A62E2D2D"
-            android:fadeScrollbars="true">
+            android:fadeScrollbars="true" >
 
+            <TextView
+                android:id="@+id/voltage"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:paddingTop="1dp"
+                android:text="@string/Voltage"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="212dp"
+                android:layout_height="30dp"
+                android:layout_column="1"
+                android:clickable="true"
+                android:dropDownWidth="wrap_content"
+                android:spinnerMode="dropdown" />
+
+            <TextView
+                android:id="@+id/altitude"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:paddingTop="1dp"
+                android:text="@string/Altitude"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/speed"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:paddingTop="1dp"
+                android:text="@string/Speed"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/yaw"
+                android:layout_width="0dp"
+                android:layout_height="30dp"
+                android:layout_weight="1"
+                android:paddingTop="1dp"
+                android:text="@string/Yaw"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="136dp"
+                android:layout_height="30dp"
+                android:paddingTop="1dp"
+                android:text="@string/textView"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:textStyle="bold" />
         </LinearLayout>
 
     </FrameLayout>
 
-
-    <TextView
-        android:id="@+id/voltage"
-        android:layout_width="0dp"
-        android:layout_height="30dp"
-        android:layout_marginEnd="146dp"
-        android:layout_marginBottom="315dp"
-        android:layout_weight="1"
-        android:paddingTop="1dp"
-        android:text="@string/Voltage"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonTakeoff"
-        app:layout_constraintEnd_toEndOf="@+id/textView3"
-        app:layout_constraintEnd_toStartOf="@+id/spinner"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="0dp"
-        android:layout_height="30dp"
-        android:layout_marginBottom="317dp"
-        android:layout_weight="1"
-        android:paddingTop="1dp"
-        android:text="비행모드"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonTakeoff"
-        app:layout_constraintEnd_toStartOf="@+id/spinner"
-        app:layout_constraintStart_toEndOf="@+id/voltage"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <Spinner
-        android:id="@+id/spinner"
-        android:layout_width="150dp"
-        android:layout_height="30dp"
-        android:layout_column="1"
-        android:layout_marginEnd="350dp"
-        android:clickable="true"
-        android:dropDownWidth="wrap_content"
-        android:spinnerMode="dropdown"
-        app:layout_constraintEnd_toStartOf="@+id/textView"
-        app:layout_constraintStart_toEndOf="@+id/voltage"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/altitude"
-        android:layout_width="0dp"
-        android:layout_height="30dp"
-        android:layout_weight="1"
-        android:paddingTop="1dp"
-        android:text="@string/Altitude"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/voltage"
-        app:layout_constraintEnd_toStartOf="@+id/speed"
-        app:layout_constraintStart_toEndOf="@+id/spinner" />
-
-    <TextView
-        android:id="@+id/speed"
-        android:layout_width="0dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="496dp"
-        android:layout_weight="1"
-        android:paddingTop="1dp"
-        android:text="@string/Speed"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/voltage"
-        app:layout_constraintEnd_toStartOf="@+id/yaw"
-        app:layout_constraintStart_toStartOf="@+id/frameLayout" />
-
-    <TextView
-        android:id="@+id/yaw"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="596dp"
-        android:layout_marginBottom="315dp"
-        android:layout_weight="1"
-        android:paddingTop="1dp"
-        android:text="@string/Yaw"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toTopOf="@+id/intellectual_map"
-        app:layout_constraintEnd_toStartOf="@+id/textView"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@+id/frameLayout"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="0dp"
-        android:layout_height="30dp"
-        android:paddingTop="1dp"
-        android:text="@string/textView"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        app:layout_constraintBaseline_toBaselineOf="@+id/yaw"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/spinner" />
 
     <Button
         android:id="@+id/buttonTakeoff"
@@ -161,45 +115,42 @@
         android:textIsSelectable="false"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/voltage" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/lock"
         style="@style/button_style"
         android:layout_width="80dp"
         android:layout_height="50dp"
-        android:layout_marginBottom="124dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/round_button"
         android:text="@string/map_lock"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/locking"
-        app:layout_constraintTop_toBottomOf="@+id/unlock" />
+        app:layout_constraintBottom_toTopOf="@+id/locking"
+        app:layout_constraintStart_toStartOf="@+id/locking" />
 
     <Button
         android:id="@+id/unlock"
         style="@style/button_style"
         android:layout_width="80dp"
         android:layout_height="50dp"
-        android:layout_marginTop="250dp"
-        android:layout_marginBottom="57dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/round_button"
         android:text="@string/map_unlock"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/lock"
-        app:layout_constraintStart_toStartOf="@+id/locking"
-        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+        app:layout_constraintStart_toStartOf="@+id/locking" />
 
     <Button
         android:id="@+id/locking"
         style="@style/button_style"
         android:layout_width="80dp"
         android:layout_height="50dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/round_button_arm"
         android:outlineProvider="paddedBounds"
@@ -207,17 +158,14 @@
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/spinner"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintEnd_toStartOf="@+id/map_type" />
 
     <Button
         android:id="@+id/map_type"
         style="@style/button_style"
         android:layout_width="100dp"
         android:layout_height="50dp"
-        android:layout_marginStart="12dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/round_button_arm"
         android:outlineProvider="paddedBounds"
@@ -225,7 +173,7 @@
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/locking" />
+        app:layout_constraintEnd_toStartOf="@+id/intellectual_map" />
 
     <Button
         android:id="@+id/basic_map"
@@ -277,8 +225,7 @@
         style="@style/button_style"
         android:layout_width="120dp"
         android:layout_height="50dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="150dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
         android:background="@drawable/round_button_arm"
         android:outlineProvider="paddedBounds"
@@ -286,50 +233,37 @@
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.259"
-        app:layout_constraintStart_toEndOf="@+id/map_type"
-        app:layout_constraintTop_toBottomOf="@+id/yaw" />
+        app:layout_constraintEnd_toStartOf="@+id/map_clear" />
 
     <Button
         android:id="@+id/intellectual_map_off"
         style="@style/button_style"
         android:layout_width="120dp"
         android:layout_height="50dp"
-        android:layout_marginStart="15dp"
-        android:layout_marginEnd="150dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/round_button"
         android:outlineProvider="paddedBounds"
         android:text="@string/intellectual_map_off"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/intellectual_map"
-        app:layout_constraintTop_toBottomOf="@+id/yaw"
-        app:layout_constraintVertical_bias="0.638" />
+        app:layout_constraintBottom_toTopOf="@+id/intellectual_map_on"
+        app:layout_constraintStart_toStartOf="@+id/intellectual_map" />
 
     <Button
         android:id="@+id/intellectual_map_on"
         style="@style/button_style"
         android:layout_width="120dp"
         android:layout_height="50dp"
-        android:layout_marginStart="15dp"
-        android:layout_marginEnd="150dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/round_button"
         android:outlineProvider="paddedBounds"
         android:text="@string/intellectual_map_on"
         android:textColor="#FFFFFF"
         android:textSize="14sp"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/intellectual_map"
-        app:layout_constraintTop_toBottomOf="@+id/yaw"
-        app:layout_constraintVertical_bias="0.819" />
+        app:layout_constraintBottom_toTopOf="@+id/intellectual_map"
+        app:layout_constraintStart_toStartOf="@+id/intellectual_map" />
 
     <Button
         android:id="@+id/map_clear"
@@ -349,126 +283,123 @@
         android:id="@+id/altitude_setting"
         android:layout_width="80dp"
         android:layout_height="55dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:text="이륙고도"
         android:textAlignment="center"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/voltage" />
+        app:layout_constraintBottom_toTopOf="@+id/complete"
+        app:layout_constraintStart_toStartOf="@+id/complete" />
 
     <Button
         android:id="@+id/altitude_up"
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_up"
         android:visibility="invisible"
-        app:layout_constraintStart_toEndOf="@+id/altitude_setting"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintBottom_toTopOf="@+id/complete"
+        app:layout_constraintStart_toEndOf="@+id/altitude_setting" />
 
     <Button
         android:id="@+id/altitude_down"
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_down"
         android:visibility="invisible"
-        app:layout_constraintStart_toEndOf="@+id/altitude_up"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintBottom_toTopOf="@+id/complete"
+        app:layout_constraintStart_toEndOf="@+id/altitude_up" />
 
     <Button
         android:id="@+id/drone_mode"
         android:layout_width="55dp"
         android:layout_height="55dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="140dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/droneMode"
         android:textAlignment="center"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/voltage" />
+        app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
+        app:layout_constraintStart_toStartOf="@+id/altitude_setting" />
 
     <Button
         android:id="@+id/basicMode"
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="140dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/basicMode"
         android:visibility="invisible"
-        app:layout_constraintStart_toEndOf="@+id/drone_mode"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
+        app:layout_constraintStart_toEndOf="@+id/drone_mode" />
 
     <Button
         android:id="@+id/areaMonitoring"
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="140dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/areaMonitoring"
         android:visibility="invisible"
-        app:layout_constraintStart_toEndOf="@+id/intervalMonitoring"
-        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+        app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
+        app:layout_constraintStart_toEndOf="@+id/intervalMonitoring" />
 
     <Button
         android:id="@+id/flightRoutes"
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="140dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/flightRoutes"
         android:visibility="invisible"
-        app:layout_constraintStart_toEndOf="@+id/basicMode"
-        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+        app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
+        app:layout_constraintStart_toEndOf="@+id/basicMode" />
 
     <Button
         android:id="@+id/intervalMonitoring"
         android:layout_width="55dp"
         android:layout_height="55dp"
         android:layout_marginStart="10dp"
-        android:layout_marginTop="140dp"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
         android:text="@string/intervalMonitoring"
         android:visibility="invisible"
-        app:layout_constraintStart_toEndOf="@+id/flightRoutes"
-        app:layout_constraintTop_toBottomOf="@+id/spinner" />
+        app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
+        app:layout_constraintStart_toEndOf="@+id/flightRoutes" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="300dp"
         android:layout_height="125dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
         android:background="#00FFFFFF"
         android:scrollbars="vertical"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3">
+        app:layout_constraintBottom_toTopOf="@+id/flightRoutes"
+        app:layout_constraintStart_toStartOf="parent">
 
     </android.support.v7.widget.RecyclerView>
 
     <Button
         android:id="@+id/complete"
+        style="@style/button_style"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="260dp"
-        android:text="@string/missionTransmission"
-        style="@style/button_style"
+        android:layout_marginBottom="8dp"
         android:background="@drawable/round_button_arm"
-        android:textColor="#FFFFFF"
+        android:text="@string/missionTransmission"
         android:textAlignment="center"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/voltage" />
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toTopOf="@+id/buttonTakeoff"
+        app:layout_constraintStart_toStartOf="@+id/buttonTakeoff" />
 
 </android.support.constraint.ConstraintLayout>
