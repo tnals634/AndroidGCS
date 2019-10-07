@@ -26,6 +26,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.internal.GetServiceRequest;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
@@ -76,36 +77,45 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private static final String TAG = MainActivity.class.getSimpleName( );
 
     MapFragment mNaverMapFragment = null;
-    private Drone drone;
-    private ControlTower controlTower;
-    private int droneType = Type.TYPE_UNKNOWN;
-    private final Handler handler = new Handler( );
+    private Drone mDrone;
+    private ControlTower mControlTower;
+    private int mDroneType = Type.TYPE_UNKNOWN;
+    private final Handler mHandler = new Handler( );
 
-    Marker drone_marker = new Marker( );
+    Marker mDroneMarker = new Marker( );
 
-    Marker guideMarker = new Marker( );
+    Marker mGuideMarker = new Marker( );
 
-    private Spinner modeSelector;
-    NaverMap naverMap;
+    private Spinner mModeSelector;
+    NaverMap mMap;
 
-    double altitude_drone = 3;
+    double mDroneAltitudeValue = 3;
 
-    ArrayList<LatLng> flight_path = new ArrayList<>( );
-    PolylineOverlay drone_polyline = new PolylineOverlay( );
+    ArrayList<LatLng> mFlightPath = new ArrayList<>( );
+    PolylineOverlay mFlightDronePolyline = new PolylineOverlay( );
 
-    Context context = this;
+    Context mContext = this;
 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
     private FusedLocationSource locationSource;
 
+    Marker[][] mIntervalMarkerAB = new Marker[2][2];
+    //mIntervalMarkerAB[0][0] = start A, mIntervalMarkerAB[0][1] = sub A, mIntervalMarkerAB[1][0] = start B, mIntervalMarkerAB[1][1] = sub B
+
+    PolygonOverlay mIntervalPolygon = new PolygonOverlay( );
+    int mIntervlaCountValue = 0;
+    
+    ArrayList<LatLng> mCountMeter = new ArrayList<>( );
+    PolylineOverlay mIntervalPolyline = new PolylineOverlay( );
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.i(TAG, "Start mainActivity");
+        Log.i(TAG, getString(R.string.start_mainactivity));
         super.onCreate(savedInstanceState);
 
         getWindow( ).setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        hidNavigationBar( );
+        hideNavigationBar( );
 
         setContentView(R.layout.activity_main);
         this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
@@ -113,8 +123,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         locationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
 
         final Context context = getApplicationContext( );
-        this.controlTower = new ControlTower(context);
-        this.drone = new Drone(context);
+        this.mControlTower = new ControlTower(context);
+        this.mDrone = new Drone(context);
 
         FragmentManager fm = getSupportFragmentManager( );
         mNaverMapFragment = (MapFragment) fm.findFragmentById(R.id.map);
@@ -123,8 +133,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             fm.beginTransaction( ).add(R.id.map, mNaverMapFragment).commit( );
         }
 
-        this.modeSelector = (Spinner) findViewById(R.id.spinner);
-        this.modeSelector.setOnItemSelectedListener(new Spinner.OnItemSelectedListener( ) {
+        this.mModeSelector = (Spinner) findViewById(R.id.spinner);
+        this.mModeSelector.setOnItemSelectedListener(new Spinner.OnItemSelectedListener( ) {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 ((TextView) parent.getChildAt(0)).setTextColor(Color.WHITE);
@@ -155,16 +165,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
 ///////////////////////////////////////////(하단바 없애기)//////////////////////////////////////////
 
-    private void hidNavigationBar() {
+    private void hideNavigationBar() {
         int uiOptions = getWindow( ).getDecorView( ).getSystemUiVisibility( );
         int newUiOptions = uiOptions;
-        boolean isImmersiveModeEnabled =
-                ((uiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY) == uiOptions);
-        if (isImmersiveModeEnabled) {
-            Log.d(TAG, "Turning immersive mode mode off.");
-        } else {
-            Log.d(TAG, "Turning immersive mode mode on.");
-        }
+
         newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         newUiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         getWindow( ).getDecorView( ).setSystemUiVisibility(newUiOptions);
@@ -174,181 +178,181 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 ///////////////////////////////////////////(arming 부분)////////////////////////////////////////////
 
     public void onArmButtonTap(View view) {
-        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+        State vehicleState = this.mDrone.getAttribute(AttributeType.STATE);
 
         if (vehicleState.isFlying( )) {
             // Land
-            VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_LAND, new SimpleCommandListener( ) {
+            VehicleApi.getApi(this.mDrone).setVehicleMode(VehicleMode.COPTER_LAND, new SimpleCommandListener( ) {
                 @Override
                 public void onError(int executionError) {
-                    alertUser("착륙 시킬 수 없습니다.");
+                    alertUser(getString(R.string.not_to_landing));
                 }
 
                 @Override
                 public void onTimeout() {
-                    alertUser("착륙 시킬 수 없습니다.");
+                    alertUser(getString(R.string.not_to_landing));
                 }
             });
         } else if (vehicleState.isArmed( )) {
             // Take off
-            ControlApi.getApi(this.drone).takeoff(altitude_drone, new AbstractCommandListener( ) {
+            ControlApi.getApi(this.mDrone).takeoff(mDroneAltitudeValue, new AbstractCommandListener( ) {
 
                 @Override
                 public void onSuccess() {
-                    alertUser("이륙 중...");
+                    alertUser(getString(R.string.on_take_off));
                 }
 
                 @Override
                 public void onError(int i) {
-                    alertUser("이륙할 수 없습니다.");
+                    alertUser(getString(R.string.cannot_take_off));
                 }
 
                 @Override
                 public void onTimeout() {
-                    alertUser("이륙할 수 없습니다.");
+                    alertUser(getString(R.string.cannot_take_off));
                 }
 
             });
-            Log.d("altitude_drone", "값 : " + altitude_drone);
+            Log.d("altitude_drone", "값 : " + mDroneAltitudeValue);
         } else if (!vehicleState.isConnected( )) {
             // Connect
-            alertUser("먼저 드론과 연결하십시오.");
+            alertUser(getString(R.string.have_to_connect_to_drone));
         } else {
             if (vehicleState.getVehicleMode( ) == VehicleMode.COPTER_LAND) {
-                VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_ALT_HOLD, new SimpleCommandListener( ) {
+                VehicleApi.getApi(this.mDrone).setVehicleMode(VehicleMode.COPTER_ALT_HOLD, new SimpleCommandListener( ) {
                     @Override
                     public void onError(int executionError) {
-                        alertUser("alt_hold 모드로 전환할 수 없습니다.");
+                        alertUser(getString(R.string.cannot_change_althold));
                     }
 
                     @Override
                     public void onTimeout() {
-                        alertUser("alt_hold 모드로 전환할 수 없습니다.");
+                        alertUser(getString(R.string.cannot_change_althold));
                     }
                 });
             }
-            DialogArming( );
+            armingDialog( );
         }
     }
 
     protected void updateArmButton() {
-        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+        State vehicleState = this.mDrone.getAttribute(AttributeType.STATE);
         Button armButton = (Button) findViewById(R.id.buttonTakeoff);
 
 
         if (vehicleState.isFlying( )) {
-            armButton.setText("LAND");
+            armButton.setText(getString(R.string.land));
         } else if (vehicleState.isArmed( )) {
-            armButton.setText("TAKE_OFF");
+            armButton.setText(getString(R.string.take_off));
         } else if (vehicleState.isConnected( )) {
-            armButton.setText("ARM");
+            armButton.setText(getString(R.string.arm));
         }
     }
 
-    public void ArmButton() {
+    public void armingButton() {
 
-        VehicleApi.getApi(this.drone).arm(true, false, new SimpleCommandListener( ) {
+        VehicleApi.getApi(this.mDrone).arm(true, false, new SimpleCommandListener( ) {
             @Override
             public void onError(int executionError) {
-                alertUser("arming 할 수 없습니다.");
+                alertUser(getString(R.string.cannot_arming));
             }
 
             @Override
             public void onTimeout() {
-                alertUser("Arming 시간이 초과되었습니다.");
+                alertUser(getString(R.string.time_out_arming));
             }
         });
     }
 
-    private void DialogArming() {
-        AlertDialog.Builder arm_diaglog = new AlertDialog.Builder(this);
-        arm_diaglog.setMessage("시동을 거시겠습니까?").setCancelable(false).setPositiveButton("아니오",
+    private void armingDialog() {
+        AlertDialog.Builder dialogArm = new AlertDialog.Builder(this);
+        dialogArm.setMessage(getString(R.string.set_a_machine)).setCancelable(false).setPositiveButton(getString(R.string.no),
                 new DialogInterface.OnClickListener( ) {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel( );
                     }
-                }).setNegativeButton("예",
+                }).setNegativeButton(getString(R.string.yes),
                 new DialogInterface.OnClickListener( ) {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        ArmButton( );
+                        armingButton( );
                         dialog.cancel( );
                     }
                 });
-        AlertDialog alert = arm_diaglog.create( );
+        AlertDialog alert = dialogArm.create( );
 
-        alert.setTitle("Arming");
+        alert.setTitle(getString(R.string.arming));
         alert.show( );
     }
 
 ///////////////////////////////////////////(가이드 모드)////////////////////////////////////////////
 
-    public void Guide() {
-        naverMap.setOnMapLongClickListener((PointF, latLng) ->
-                GuideDialog(PointF, latLng)
+    public void startGuideMode() {
+        mMap.setOnMapLongClickListener((PointF, latLng) ->
+                guideModeDialog(PointF, latLng)
         );
     }
 
-    public void GuideMarker(PointF point, LatLng latLng) {
+    public void guideMarker(PointF point, LatLng latLng) {
 
-        guideMarker.setPosition(latLng);
-        guideMarker.setIcon(OverlayImage.fromResource(R.drawable.marker_end));
-        guideMarker.setWidth(100);
-        guideMarker.setHeight(100);
-        guideMarker.setAnchor(point);
-        guideMarker.setMap(naverMap);
+        mGuideMarker.setPosition(latLng);
+        mGuideMarker.setIcon(OverlayImage.fromResource(R.drawable.marker_end));
+        mGuideMarker.setWidth(100);
+        mGuideMarker.setHeight(100);
+        mGuideMarker.setAnchor(point);
+        mGuideMarker.setMap(mMap);
 
-        ControlApi.getApi(this.drone).goTo(new LatLong(latLng.latitude, latLng.longitude),
+        ControlApi.getApi(this.mDrone).goTo(new LatLong(latLng.latitude, latLng.longitude),
                 true, new AbstractCommandListener( ) {
                     @Override
                     public void onSuccess() {
-                        alertUser("목적지로 향합니다.");
+                        alertUser(getString(R.string.go_to_target));
                     }
 
                     @Override
                     public void onError(int i) {
-                        alertUser("갈 수 없습니다.");
+                        alertUser(getString(R.string.cannot_go_target));
                     }
 
                     @Override
                     public void onTimeout() {
-                        alertUser("갈 수 없습니다.");
+                        alertUser(getString(R.string.cannot_go_target));
                     }
                 });
         Log.d("guide", "guidePosition : " + new LatLong(latLng.latitude, latLng.longitude));
     }
 
     public void updateDistanceFromTarget() {
-        LatLng gMarker = new LatLng(guideMarker.getPosition( ).latitude, guideMarker.getPosition( ).longitude);
-        LatLng dMarker = new LatLng(drone_marker.getPosition( ).latitude, drone_marker.getPosition( ).longitude);
+        LatLng gMarker = new LatLng(mGuideMarker.getPosition( ).latitude, mGuideMarker.getPosition( ).longitude);
+        LatLng dMarker = new LatLng(mDroneMarker.getPosition( ).latitude, mDroneMarker.getPosition( ).longitude);
         double btween = gMarker.distanceTo(dMarker);
 
         if (btween <= 1) {
-            Toast.makeText(this, "목적지에 도착했습니다.", Toast.LENGTH_SHORT).show( );
+            Toast.makeText(this, getString(R.string.arrived_target), Toast.LENGTH_SHORT).show( );
         }
         Log.d("guide", "gMarker.distanceTo(dMarker); : " + gMarker.distanceTo(dMarker));
     }
 
-    public void GuideDialog(PointF point, LatLng latlng) {
-        AlertDialog.Builder guide_diaglog = new AlertDialog.Builder(this);
-        guide_diaglog.setMessage("가이드모드로 전환하시겠습니까?").setCancelable(false).setPositiveButton("아니오",
+    public void guideModeDialog(PointF point, LatLng latlng) {
+        AlertDialog.Builder dialogGuided = new AlertDialog.Builder(this);
+        dialogGuided.setMessage(getString(R.string.change_to_guide_mode)).setCancelable(false).setPositiveButton(getString(R.string.no),
                 new DialogInterface.OnClickListener( ) {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel( );
                     }
-                }).setNegativeButton("예",
+                }).setNegativeButton(getString(R.string.yes),
                 new DialogInterface.OnClickListener( ) {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        GuideMarker(point, latlng);
+                        guideMarker(point, latlng);
                         dialog.cancel( );
                     }
                 });
-        AlertDialog alert = guide_diaglog.create( );
+        AlertDialog alert = dialogGuided.create( );
 
-        alert.setTitle("가이드모드");
+        alert.setTitle(getString(R.string.guide_mode));
         alert.show( );
     }
 
@@ -357,19 +361,19 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     @Override
     public void onStart() {
         super.onStart( );
-        this.controlTower.connect(this);
-        updateVehicleModesForType(this.droneType);
+        this.mControlTower.connect(this);
+        updateVehicleModesForType(this.mDroneType);
     }
 
     @Override
     public void onStop() {
         super.onStop( );
-        if (this.drone.isConnected( )) {
-            this.drone.disconnect( );
+        if (this.mDrone.isConnected( )) {
+            this.mDrone.disconnect( );
         }
 
-        this.controlTower.unregisterDrone(this.drone);
-        this.controlTower.disconnect( );
+        this.mControlTower.unregisterDrone(this.mDrone);
+        this.mControlTower.disconnect( );
     }
 
 ///////////////////////////////////////////(EVENT 부분)/////////////////////////////////////////////
@@ -378,27 +382,27 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void onDroneEvent(String event, Bundle extras) {
         switch (event) {
             case AttributeEvent.STATE_CONNECTED:
-                alertUser("드론 연결했습니다.");
+                alertUser(getString(R.string.connect_to_drone));
                 updateArmButton( );
                 updateMapTypeButton( );
                 updateYAW( );
                 updateAltitudeSetting( );
                 updateDroneMode( );
                 missionTransmissionButton();
-                updateClearButton(drone_polyline);
+                updateClearButton(mFlightDronePolyline);
                 break;
 
             case AttributeEvent.GPS_POSITION:
                 updateDronePosition( );
-                Guide( );
+                startGuideMode( );
                 updateDistanceFromTarget( );
                 break;
 
             case AttributeEvent.TYPE_UPDATED:
-                Type newDroneType = this.drone.getAttribute(AttributeType.TYPE);
-                if (newDroneType.getDroneType( ) != this.droneType) {
-                    this.droneType = newDroneType.getDroneType( );
-                    updateVehicleModesForType(this.droneType);
+                Type newDroneType = this.mDrone.getAttribute(AttributeType.TYPE);
+                if (newDroneType.getDroneType( ) != this.mDroneType) {
+                    this.mDroneType = newDroneType.getDroneType( );
+                    updateVehicleModesForType(this.mDroneType);
                 }
                 break;
 
@@ -437,85 +441,85 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 ///////////////////////////////////////////(map type 버튼)//////////////////////////////////////////
 
     public void updateMapTypeButton() {
-        final Button mapType = (Button) findViewById(R.id.map_type);
-        final Button mapBasic = (Button) findViewById(R.id.basic_map);
-        final Button mapTerrain = (Button) findViewById(R.id.terrain_map);
-        final Button mapSatellite = (Button) findViewById(R.id.satellite_map);
+        final Button btnMapType = (Button) findViewById(R.id.map_type);
+        final Button btnMapBasic = (Button) findViewById(R.id.basic_map);
+        final Button btnMapTerrain = (Button) findViewById(R.id.terrain_map);
+        final Button btnMapSatellite = (Button) findViewById(R.id.satellite_map);
 
-        final Button map_on = (Button) findViewById(R.id.intellectual_map_on);
-        final Button map_off = (Button) findViewById(R.id.intellectual_map_off);
+        final Button btnMapOn = (Button) findViewById(R.id.intellectual_map_on);
+        final Button btnMapOff = (Button) findViewById(R.id.intellectual_map_off);
 
-        final Button mapLock = (Button) findViewById(R.id.lock);
-        final Button mapUnlock = (Button) findViewById(R.id.unlock);
+        final Button btnMapLock = (Button) findViewById(R.id.lock);
+        final Button btnMapUnLock = (Button) findViewById(R.id.unlock);
 
-        mapType.setOnClickListener(new Button.OnClickListener( ) {
+        btnMapType.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
 
-                if (mapBasic.getVisibility( ) != v.VISIBLE) {
+                if (btnMapBasic.getVisibility( ) != v.VISIBLE) {
 
-                    mapBasic.setVisibility(v.VISIBLE);
-                    mapTerrain.setVisibility(v.VISIBLE);
-                    mapSatellite.setVisibility(v.VISIBLE);
+                    btnMapBasic.setVisibility(v.VISIBLE);
+                    btnMapTerrain.setVisibility(v.VISIBLE);
+                    btnMapSatellite.setVisibility(v.VISIBLE);
 
-                    map_on.setVisibility(v.GONE);
-                    map_off.setVisibility(v.GONE);
+                    btnMapOn.setVisibility(v.GONE);
+                    btnMapOff.setVisibility(v.GONE);
 
-                    mapLock.setVisibility(v.GONE);
-                    mapUnlock.setVisibility(v.GONE);
+                    btnMapLock.setVisibility(v.GONE);
+                    btnMapUnLock.setVisibility(v.GONE);
 
-                    if (mapType.getText( ) == mapBasic.getText( )) {
-                        mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                    } else if (mapType.getText( ) == mapTerrain.getText( )) {
-                        mapTerrain.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                    } else if (mapType.getText( ) == mapSatellite.getText( )) {
-                        mapSatellite.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
+                    if (btnMapType.getText( ) == btnMapBasic.getText( )) {
+                        btnMapBasic.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                    } else if (btnMapType.getText( ) == btnMapTerrain.getText( )) {
+                        btnMapTerrain.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                    } else if (btnMapType.getText( ) == btnMapSatellite.getText( )) {
+                        btnMapSatellite.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
                     }
-                } else if (mapBasic.getVisibility( ) == v.VISIBLE) {
-                    mapBasic.setVisibility(v.INVISIBLE);
-                    mapTerrain.setVisibility(v.INVISIBLE);
-                    mapSatellite.setVisibility(v.INVISIBLE);
+                } else if (btnMapBasic.getVisibility( ) == v.VISIBLE) {
+                    btnMapBasic.setVisibility(v.INVISIBLE);
+                    btnMapTerrain.setVisibility(v.INVISIBLE);
+                    btnMapSatellite.setVisibility(v.INVISIBLE);
                 }
             }
         });
-        mapBasic.setOnClickListener(new Button.OnClickListener( ) { //일반지도로 변경
+        btnMapBasic.setOnClickListener(new Button.OnClickListener( ) { //일반지도로 변경
             @Override
             public void onClick(View v) {
-                mapType.setText("일반지도");
-                naverMap.setMapType(NaverMap.MapType.Basic);
-                mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                mapTerrain.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                mapSatellite.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                mapBasic.setVisibility(v.GONE);
-                mapTerrain.setVisibility(v.GONE);
-                mapSatellite.setVisibility(v.GONE);
+                btnMapType.setText(getString(R.string.map_basic));
+                mMap.setMapType(NaverMap.MapType.Basic);
+                btnMapBasic.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                btnMapTerrain.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapSatellite.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapBasic.setVisibility(v.GONE);
+                btnMapTerrain.setVisibility(v.GONE);
+                btnMapSatellite.setVisibility(v.GONE);
             }
         });
-        mapTerrain.setOnClickListener(new Button.OnClickListener( ) { //지형도로 변경
+        btnMapTerrain.setOnClickListener(new Button.OnClickListener( ) { //지형도로 변경
             @Override
             public void onClick(View v) {
-                mapType.setText("지형도");
-                naverMap.setMapType(NaverMap.MapType.Terrain);
-                mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                mapTerrain.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                mapSatellite.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                mapBasic.setVisibility(v.GONE);
-                mapTerrain.setVisibility(v.GONE);
-                mapSatellite.setVisibility(v.GONE);
+                btnMapType.setText(getString(R.string.map_terrain));
+                mMap.setMapType(NaverMap.MapType.Terrain);
+                btnMapBasic.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapTerrain.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                btnMapSatellite.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapBasic.setVisibility(v.GONE);
+                btnMapTerrain.setVisibility(v.GONE);
+                btnMapSatellite.setVisibility(v.GONE);
             }
         });
-        mapSatellite.setOnClickListener(new Button.OnClickListener( ) { //위성지도로 변경
+        btnMapSatellite.setOnClickListener(new Button.OnClickListener( ) { //위성지도로 변경
             @Override
             public void onClick(View v) {
 
-                mapType.setText("위성지도");
-                naverMap.setMapType(NaverMap.MapType.Satellite);
-                mapBasic.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                mapTerrain.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                mapSatellite.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                mapBasic.setVisibility(v.GONE);
-                mapTerrain.setVisibility(v.GONE);
-                mapSatellite.setVisibility(v.GONE);
+                btnMapType.setText(getString(R.string.map_satellite));
+                mMap.setMapType(NaverMap.MapType.Satellite);
+                btnMapBasic.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapTerrain.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapSatellite.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                btnMapBasic.setVisibility(v.GONE);
+                btnMapTerrain.setVisibility(v.GONE);
+                btnMapSatellite.setVisibility(v.GONE);
             }
         });
     }
@@ -524,68 +528,68 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     public void updateMapLock(final LatLng latLng) {
 
-        final Button mapLocking = (Button) findViewById(R.id.locking);
-        final Button mapLock = (Button) findViewById(R.id.lock);
-        final Button mapUnlock = (Button) findViewById(R.id.unlock);
+        final Button btnMapLoking = (Button) findViewById(R.id.locking);
+        final Button btnMapLock = (Button) findViewById(R.id.lock);
+        final Button btnMapUnLock = (Button) findViewById(R.id.unlock);
 
-        final Button mapBasic = (Button) findViewById(R.id.basic_map);
-        final Button mapTerrain = (Button) findViewById(R.id.terrain_map);
-        final Button mapSatellite = (Button) findViewById(R.id.satellite_map);
+        final Button btnMapBasic = (Button) findViewById(R.id.basic_map);
+        final Button btnMapTerrain = (Button) findViewById(R.id.terrain_map);
+        final Button btnMapSatellite = (Button) findViewById(R.id.satellite_map);
 
-        final Button map_on = (Button) findViewById(R.id.intellectual_map_on);
-        final Button map_off = (Button) findViewById(R.id.intellectual_map_off);
+        final Button btnMapOn = (Button) findViewById(R.id.intellectual_map_on);
+        final Button btnMapOff = (Button) findViewById(R.id.intellectual_map_off);
 
-        if (mapLocking.getText( ) == mapLock.getText( )) {
+        if (btnMapLoking.getText( ) == btnMapLock.getText( )) {
             CameraUpdate cameraupdate = CameraUpdate.scrollTo(latLng);
-            naverMap.moveCamera(cameraupdate); //찍히는 좌표마다 카메라가 따라다님
+            mMap.moveCamera(cameraupdate); //찍히는 좌표마다 카메라가 따라다님
         }
 
-        mapLocking.setOnClickListener(new Button.OnClickListener( ) {
+        btnMapLoking.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
-                if (mapLock.getVisibility( ) != v.VISIBLE) {
-                    mapLock.setVisibility(v.VISIBLE);
-                    mapUnlock.setVisibility(v.VISIBLE);
+                if (btnMapLock.getVisibility( ) != v.VISIBLE) {
+                    btnMapLock.setVisibility(v.VISIBLE);
+                    btnMapUnLock.setVisibility(v.VISIBLE);
 
-                    mapBasic.setVisibility(v.GONE);
-                    mapTerrain.setVisibility(v.GONE);
-                    mapSatellite.setVisibility(v.GONE);
+                    btnMapBasic.setVisibility(v.GONE);
+                    btnMapTerrain.setVisibility(v.GONE);
+                    btnMapSatellite.setVisibility(v.GONE);
 
-                    map_on.setVisibility(v.GONE);
-                    map_off.setVisibility(v.GONE);
+                    btnMapOn.setVisibility(v.GONE);
+                    btnMapOff.setVisibility(v.GONE);
 
-                    if (mapLocking.getText( ) == mapLock.getText( )) {
-                        mapLock.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                    } else if (mapLocking.getText( ) == mapUnlock.getText( )) {
-                        mapUnlock.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
+                    if (btnMapLoking.getText( ) == btnMapLock.getText( )) {
+                        btnMapLock.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                    } else if (btnMapLoking.getText( ) == btnMapUnLock.getText( )) {
+                        btnMapUnLock.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
                     }
-                } else if (mapLock.getVisibility( ) == v.VISIBLE) {
-                    mapLock.setVisibility(v.INVISIBLE);
-                    mapUnlock.setVisibility(v.INVISIBLE);
+                } else if (btnMapLock.getVisibility( ) == v.VISIBLE) {
+                    btnMapLock.setVisibility(v.INVISIBLE);
+                    btnMapUnLock.setVisibility(v.INVISIBLE);
                 }
             }
         });
-        mapLock.setOnClickListener(new Button.OnClickListener( ) { //맵 잠금
+        btnMapLock.setOnClickListener(new Button.OnClickListener( ) { //맵 잠금
             @Override
             public void onClick(View v) {
-                mapLocking.setText("맵잠금");
+                btnMapLoking.setText(getString(R.string.map_lock));
                 CameraUpdate cameraupdate = CameraUpdate.scrollTo(latLng);
-                naverMap.moveCamera(cameraupdate); //찍히는 좌표마다 카메라가 따라다님
-                mapLock.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                mapUnlock.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                mapLock.setVisibility(v.GONE);
-                mapUnlock.setVisibility(v.GONE);
+                mMap.moveCamera(cameraupdate); //찍히는 좌표마다 카메라가 따라다님
+                btnMapLock.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                btnMapUnLock.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapLock.setVisibility(v.GONE);
+                btnMapUnLock.setVisibility(v.GONE);
             }
         });
 
-        mapUnlock.setOnClickListener(new Button.OnClickListener( ) { //맵 이동
+        btnMapUnLock.setOnClickListener(new Button.OnClickListener( ) { //맵 이동
             @Override
             public void onClick(View v) {
-                mapLocking.setText("맵이동");
-                mapLock.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                mapUnlock.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                mapLock.setVisibility(v.GONE);
-                mapUnlock.setVisibility(v.GONE);
+                btnMapLoking.setText(getString(R.string.map_unlock));
+                btnMapLock.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapUnLock.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                btnMapLock.setVisibility(v.GONE);
+                btnMapUnLock.setVisibility(v.GONE);
             }
         });
     }
@@ -594,65 +598,65 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     public void updateIntellectualMap() {
 
-        final Button map_on = (Button) findViewById(R.id.intellectual_map_on);
-        final Button map_off = (Button) findViewById(R.id.intellectual_map_off);
-        final Button map_check = (Button) findViewById(R.id.intellectual_map);
+        final Button btnMapOn = (Button) findViewById(R.id.intellectual_map_on);
+        final Button btnMapOff = (Button) findViewById(R.id.intellectual_map_off);
+        final Button btnCheckMap = (Button) findViewById(R.id.intellectual_map);
 
-        final Button mapLock = (Button) findViewById(R.id.lock);
-        final Button mapUnlock = (Button) findViewById(R.id.unlock);
+        final Button btnMapLock = (Button) findViewById(R.id.lock);
+        final Button btnMapUnLock = (Button) findViewById(R.id.unlock);
 
-        final Button mapBasic = (Button) findViewById(R.id.basic_map);
-        final Button mapTerrain = (Button) findViewById(R.id.terrain_map);
-        final Button mapSatellite = (Button) findViewById(R.id.satellite_map);
+        final Button btnMapBasic = (Button) findViewById(R.id.basic_map);
+        final Button btnMapTerrain = (Button) findViewById(R.id.terrain_map);
+        final Button btnMapSatellite = (Button) findViewById(R.id.satellite_map);
 
-        map_check.setOnClickListener(new Button.OnClickListener( ) {
+        btnCheckMap.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
-                if (map_on.getVisibility( ) != v.VISIBLE) {
-                    map_on.setVisibility(v.VISIBLE);
-                    map_off.setVisibility(v.VISIBLE);
+                if (btnMapOn.getVisibility( ) != v.VISIBLE) {
+                    btnMapOn.setVisibility(v.VISIBLE);
+                    btnMapOff.setVisibility(v.VISIBLE);
 
-                    mapBasic.setVisibility(v.GONE);
-                    mapTerrain.setVisibility(v.GONE);
-                    mapSatellite.setVisibility(v.GONE);
+                    btnMapBasic.setVisibility(v.GONE);
+                    btnMapTerrain.setVisibility(v.GONE);
+                    btnMapSatellite.setVisibility(v.GONE);
 
 
-                    mapLock.setVisibility(v.GONE);
-                    mapUnlock.setVisibility(v.GONE);
+                    btnMapLock.setVisibility(v.GONE);
+                    btnMapUnLock.setVisibility(v.GONE);
 
-                    if (map_check.getText( ) == map_off.getText( )) {
-                        map_off.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                    } else if (map_check.getText( ) == map_on.getText( )) {
-                        map_on.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
+                    if (btnCheckMap.getText( ) == btnMapOff.getText( )) {
+                        btnMapOff.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                    } else if (btnCheckMap.getText( ) == btnMapOn.getText( )) {
+                        btnMapOn.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
                     }
-                } else if (map_on.getVisibility( ) == v.VISIBLE) {
-                    map_on.setVisibility(v.INVISIBLE);
-                    map_off.setVisibility(v.INVISIBLE);
+                } else if (btnMapOn.getVisibility( ) == v.VISIBLE) {
+                    btnMapOn.setVisibility(v.INVISIBLE);
+                    btnMapOff.setVisibility(v.INVISIBLE);
                 }
             }
         });
-        map_on.setOnClickListener(new Button.OnClickListener( ) { //지적도 on
+        btnMapOn.setOnClickListener(new Button.OnClickListener( ) { //지적도 on
             @Override
             public void onClick(View v) {
-                map_check.setText("지적도on");
-                naverMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, true);
-                map_on.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                map_off.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                map_on.setVisibility(v.GONE);
-                map_off.setVisibility(v.GONE);
+                btnCheckMap.setText(getString(R.string.intellectual_map_on));
+                mMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, true);
+                btnMapOn.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                btnMapOff.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapOn.setVisibility(v.GONE);
+                btnMapOff.setVisibility(v.GONE);
 
             }
         });
 
-        map_off.setOnClickListener(new Button.OnClickListener( ) { // 지적도 off
+        btnMapOff.setOnClickListener(new Button.OnClickListener( ) { // 지적도 off
             @Override
             public void onClick(View v) {
-                map_check.setText("지적도off");
-                naverMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, false);
-                map_on.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button));
-                map_off.setBackground(ContextCompat.getDrawable(context, R.drawable.round_button_arm));
-                map_on.setVisibility(v.GONE);
-                map_off.setVisibility(v.GONE);
+                btnCheckMap.setText(getString(R.string.intellectual_map_off));
+                mMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, false);
+                btnMapOn.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button));
+                btnMapOff.setBackground(ContextCompat.getDrawable(mContext, R.drawable.round_button_arm));
+                btnMapOn.setVisibility(v.GONE);
+                btnMapOff.setVisibility(v.GONE);
             }
         });
     }
@@ -660,14 +664,14 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 ///////////////////////////////////////////(polyline clear 버튼)////////////////////////////////////
 
     public void updateClearButton(final PolylineOverlay polyline) {
-        Button clearBtn = (Button) findViewById(R.id.map_clear);
+        Button btnClear = (Button) findViewById(R.id.map_clear);
 
-        clearBtn.setOnClickListener(new Button.OnClickListener( ) {
+        btnClear.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
-                flight_path.clear( );
+                mFlightPath.clear( );
                 polyline.setMap(null);
-                interval_Disappear( );
+                removeInterval( );
 
             }
         });
@@ -677,128 +681,128 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     public void updateAltitudeSetting() {
 
-        final Button altitude_setting = (Button) findViewById(R.id.altitude_setting);
-        final Button altitude_up = (Button) findViewById(R.id.altitude_up);
-        final Button altitude_down = (Button) findViewById(R.id.altitude_down);
+        final Button btnSettingAltitude = (Button) findViewById(R.id.altitude_setting);
+        final Button btnSettingUpAltitude = (Button) findViewById(R.id.altitude_up);
+        final Button btnSettingDownAltitude = (Button) findViewById(R.id.altitude_down);
 
         TextView droneAltitdue = (TextView) findViewById(R.id.altitude_setting);
-        droneAltitdue.setText(Math.round(altitude_drone) + "m\n이륙고도");
-        altitude_setting.setOnClickListener(new Button.OnClickListener( ) {
+        droneAltitdue.setText(Math.round(mDroneAltitudeValue) + getString(R.string.meter_and_take_off_altitude));
+        btnSettingAltitude.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
-                if (altitude_up.getVisibility( ) != v.VISIBLE) {
-                    altitude_up.setVisibility(v.VISIBLE);
-                    altitude_down.setVisibility(v.VISIBLE);
+                if (btnSettingUpAltitude.getVisibility( ) != v.VISIBLE) {
+                    btnSettingUpAltitude.setVisibility(v.VISIBLE);
+                    btnSettingDownAltitude.setVisibility(v.VISIBLE);
 
-                } else if (altitude_up.getVisibility( ) == v.VISIBLE) {
-                    altitude_up.setVisibility(v.INVISIBLE);
-                    altitude_down.setVisibility(v.INVISIBLE);
+                } else if (btnSettingUpAltitude.getVisibility( ) == v.VISIBLE) {
+                    btnSettingUpAltitude.setVisibility(v.INVISIBLE);
+                    btnSettingDownAltitude.setVisibility(v.INVISIBLE);
                 }
             }
         });
-        altitude_up.setOnClickListener(new Button.OnClickListener( ) { //고도 높임
+        btnSettingUpAltitude.setOnClickListener(new Button.OnClickListener( ) { //고도 높임
             @Override
             public void onClick(View v) {
-                AltitudeUp_Setting( );
+                settingUpAltitude( );
             }
         });
 
-        altitude_down.setOnClickListener(new Button.OnClickListener( ) { //고도 낮춤
+        btnSettingDownAltitude.setOnClickListener(new Button.OnClickListener( ) { //고도 낮춤
             @Override
             public void onClick(View v) {
-                AltitudeDown_Setting( );
+                settingDownAltitude( );
             }
         });
     }
 
-    public void AltitudeUp_Setting() {
-        ++altitude_drone;
+    public void settingUpAltitude() {
+        ++mDroneAltitudeValue;
         TextView droneAltitdue = (TextView) findViewById(R.id.altitude_setting);
-        droneAltitdue.setText(Math.round(altitude_drone) + "m\n이륙고도");
+        droneAltitdue.setText(Math.round(mDroneAltitudeValue) + getString(R.string.meter_and_take_off_altitude));
     }
 
-    public void AltitudeDown_Setting() {
-        --altitude_drone;
+    public void settingDownAltitude() {
+        --mDroneAltitudeValue;
         TextView droneAltitdue = (TextView) findViewById(R.id.altitude_setting);
-        droneAltitdue.setText(Math.round(altitude_drone) + "m\n이륙고도");
+        droneAltitdue.setText(Math.round(mDroneAltitudeValue) + getString(R.string.meter_and_take_off_altitude));
     }
 
 ///////////////////////////////////////////(드론 모드 변경)/////////////////////////////////////////
 
     public void updateDroneMode() {
 
-        final Button modeSelete = (Button) findViewById(R.id.drone_mode); //모드설정
-        final Button basicMode = (Button) findViewById(R.id.basicMode); // 일반모드
-        final Button flightRoutes = (Button) findViewById(R.id.flightRoutes); // 경로비행
-        final Button intervalMonitoring = (Button) findViewById(R.id.intervalMonitoring); // 간격 감시
-        final Button areaMonitoring = (Button) findViewById(R.id.areaMonitoring); // 면적 감시
-        final Button mission_complete = (Button) findViewById(R.id.complete); // 간격 감시 후 임무 전송 버튼
+        final Button btnModeSelect = (Button) findViewById(R.id.drone_mode); //모드설정
+        final Button btnBasicMode = (Button) findViewById(R.id.basicMode); // 일반모드
+        final Button btnFlightRoutes = (Button) findViewById(R.id.flightRoutes); // 경로비행
+        final Button btnIntervalMonitoring = (Button) findViewById(R.id.intervalMonitoring); // 간격 감시
+        final Button btnAreaMonitoring = (Button) findViewById(R.id.areaMonitoring); // 면적 감시
+        final Button btnMissionComplete = (Button) findViewById(R.id.complete); // 간격 감시 후 임무 전송 버튼
 
-        modeSelete.setOnClickListener(new Button.OnClickListener( ) {
+        btnModeSelect.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
-                if (basicMode.getVisibility( ) != v.VISIBLE) {
-                    basicMode.setVisibility(v.VISIBLE);
-                    flightRoutes.setVisibility(v.VISIBLE);
-                    intervalMonitoring.setVisibility(v.VISIBLE);
-                    areaMonitoring.setVisibility(v.VISIBLE);
+                if (btnBasicMode.getVisibility( ) != v.VISIBLE) {
+                    btnBasicMode.setVisibility(v.VISIBLE);
+                    btnFlightRoutes.setVisibility(v.VISIBLE);
+                    btnIntervalMonitoring.setVisibility(v.VISIBLE);
+                    btnAreaMonitoring.setVisibility(v.VISIBLE);
 
-                } else if (basicMode.getVisibility( ) == v.VISIBLE) {
-                    basicMode.setVisibility(v.INVISIBLE);
-                    flightRoutes.setVisibility(v.INVISIBLE);
-                    intervalMonitoring.setVisibility(v.INVISIBLE);
-                    areaMonitoring.setVisibility(v.INVISIBLE);
+                } else if (btnBasicMode.getVisibility( ) == v.VISIBLE) {
+                    btnBasicMode.setVisibility(v.INVISIBLE);
+                    btnFlightRoutes.setVisibility(v.INVISIBLE);
+                    btnIntervalMonitoring.setVisibility(v.INVISIBLE);
+                    btnAreaMonitoring.setVisibility(v.INVISIBLE);
                 }
 
             }
         });
-        basicMode.setOnClickListener(new Button.OnClickListener( ) { // 일반모드
+        btnBasicMode.setOnClickListener(new Button.OnClickListener( ) { // 일반모드
             @Override
             public void onClick(View v) {
-                modeSelete.setText("일반모드");
-                basicMode.setVisibility(v.INVISIBLE);
-                flightRoutes.setVisibility(v.INVISIBLE);
-                intervalMonitoring.setVisibility(v.INVISIBLE);
-                areaMonitoring.setVisibility(v.INVISIBLE);
-                interval_Disappear( );
+                btnModeSelect.setText(getString(R.string.basic_mode));
+                btnBasicMode.setVisibility(v.INVISIBLE);
+                btnFlightRoutes.setVisibility(v.INVISIBLE);
+                btnIntervalMonitoring.setVisibility(v.INVISIBLE);
+                btnAreaMonitoring.setVisibility(v.INVISIBLE);
+                removeInterval( );
             }
         });
 
-        flightRoutes.setOnClickListener(new Button.OnClickListener( ) { // 경로비행
+        btnFlightRoutes.setOnClickListener(new Button.OnClickListener( ) { // 경로비행
             @Override
             public void onClick(View v) {
-                modeSelete.setText("경로비행");
-                basicMode.setVisibility(v.INVISIBLE);
-                flightRoutes.setVisibility(v.INVISIBLE);
-                intervalMonitoring.setVisibility(v.INVISIBLE);
-                areaMonitoring.setVisibility(v.INVISIBLE);
-                interval_Disappear( );
+                btnModeSelect.setText(getString(R.string.flight_routes));
+                btnBasicMode.setVisibility(v.INVISIBLE);
+                btnFlightRoutes.setVisibility(v.INVISIBLE);
+                btnIntervalMonitoring.setVisibility(v.INVISIBLE);
+                btnAreaMonitoring.setVisibility(v.INVISIBLE);
+                removeInterval( );
             }
         });
 
-        intervalMonitoring.setOnClickListener(new Button.OnClickListener( ) { // 간격 감시
+        btnIntervalMonitoring.setOnClickListener(new Button.OnClickListener( ) { // 간격 감시
             @Override
             public void onClick(View v) {
-                modeSelete.setText("간격감시");
+                btnModeSelect.setText(getString(R.string.interval_monitoring));
                 intervalDialog();
-                mission_complete.setVisibility(v.VISIBLE);
-                basicMode.setVisibility(v.INVISIBLE);
-                flightRoutes.setVisibility(v.INVISIBLE);
-                intervalMonitoring.setVisibility(v.INVISIBLE);
-                areaMonitoring.setVisibility(v.INVISIBLE);
+                btnMissionComplete.setVisibility(v.VISIBLE);
+                btnBasicMode.setVisibility(v.INVISIBLE);
+                btnFlightRoutes.setVisibility(v.INVISIBLE);
+                btnIntervalMonitoring.setVisibility(v.INVISIBLE);
+                btnAreaMonitoring.setVisibility(v.INVISIBLE);
 
             }
         });
 
-        areaMonitoring.setOnClickListener(new Button.OnClickListener( ) { // 면적 감시
+        btnAreaMonitoring.setOnClickListener(new Button.OnClickListener( ) { // 면적 감시
             @Override
             public void onClick(View v) {
-                modeSelete.setText("면적감시");
-                basicMode.setVisibility(v.INVISIBLE);
-                flightRoutes.setVisibility(v.INVISIBLE);
-                intervalMonitoring.setVisibility(v.INVISIBLE);
-                areaMonitoring.setVisibility(v.INVISIBLE);
-                interval_Disappear( );
+                btnModeSelect.setText(getString(R.string.area_monitoring));
+                btnBasicMode.setVisibility(v.INVISIBLE);
+                btnFlightRoutes.setVisibility(v.INVISIBLE);
+                btnIntervalMonitoring.setVisibility(v.INVISIBLE);
+                btnAreaMonitoring.setVisibility(v.INVISIBLE);
+                removeInterval( );
             }
         });
     }
@@ -807,9 +811,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     private void updateSpeed() {
 
-        Speed speed = this.drone.getAttribute(AttributeType.SPEED);
+        Speed speed = this.mDrone.getAttribute(AttributeType.SPEED);
         TextView droneSpeed = (TextView) findViewById(R.id.speed);
-        droneSpeed.setText("속도 " + Math.round(speed.getGroundSpeed( )) + "m/s");
+        droneSpeed.setText(getString(R.string.speed) + Math.round(speed.getGroundSpeed( )) + getString(R.string.meters_per_second));
         Log.d("speed", "속도  " + Math.round(speed.getGroundSpeed( )) + "m/s");
 
     }
@@ -818,10 +822,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     private void updateBattery() {
 
-        Battery battery = this.drone.getAttribute(AttributeType.BATTERY);
+        Battery battery = this.mDrone.getAttribute(AttributeType.BATTERY);
         TextView droneBattery = (TextView) findViewById(R.id.voltage);
         String strBattery = String.format("%.1f", battery.getBatteryVoltage( ));
-        droneBattery.setText("전압 " + strBattery + "v");
+        droneBattery.setText(getString(R.string.voltage) + strBattery + getString(R.string.voltage_unit));
         Log.d("battery", "배터리1 " + strBattery);
 
     }
@@ -842,45 +846,45 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 if (extras != null) {
                     msg = extras.getString(LinkConnectionStatus.EXTRA_ERROR_MSG);
                 }
-                alertUser("연결 실패 : " + msg);
+                alertUser(getString(R.string.disconnected) + msg);
                 break;
         }
     }
 
     @Override
     public void onTowerConnected() {
-        alertUser("DroneKit-Android 연결되었습니다.");
-        this.controlTower.registerDrone(this.drone, this.handler);
-        this.drone.registerDroneListener(this);
+        alertUser(getString(R.string.connected_dronekit_and_android));
+        this.mControlTower.registerDrone(this.mDrone, this.mHandler);
+        this.mDrone.registerDroneListener(this);
     }
 
     @Override
     public void onTowerDisconnected() {
-        alertUser("DroneKit-Android 중단되었습니다.");
+        alertUser(getString(R.string.disconnected_dronekit_and_android));
     }
 
 //////////////////////////////(recyclerView (메시지 뷰) 생성)///////////////////////////////////////
 
-    ArrayList<String> list = new ArrayList<>( );
-    ArrayList<Long> timeCheck = new ArrayList<>( );
-    long startTime;
-    long endTime;
-    int count = 0;
-    SimpleTextAdapter adapter;
+    ArrayList<String> mList = new ArrayList<>( );
+    ArrayList<Long> mCheckTime = new ArrayList<>( );
+    long mStartTime;
+    long mEndTime;
+    int mCountTimeCheck = 0;
+    SimpleTextAdapter mAdapter;
 
     //recycle에 나오게 설정
     protected void alertUser(String message) {
 
         Toast.makeText(getApplicationContext( ), message, Toast.LENGTH_SHORT).show( );
         Log.d(TAG, message);
-        list.add(" ♬ " + message + " ");
-        startTime = SystemClock.elapsedRealtime( );
-        timeCheck.add(startTime);
+        mList.add(" ♬ " + message + " ");
+        mStartTime = SystemClock.elapsedRealtime( );
+        mCheckTime.add(mStartTime);
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new SimpleTextAdapter(list);
-        recyclerView.setAdapter(adapter);
+        mAdapter = new SimpleTextAdapter(mList);
+        recyclerView.setAdapter(mAdapter);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this,
                 LinearLayoutManager.VERTICAL, false));
@@ -891,229 +895,233 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void elapsedTime() {
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
-        double lastTime = (endTime - timeCheck.get(count)) / 1000.0;
+        double lastTime = (mEndTime - mCheckTime.get(mCountTimeCheck)) / 1000.0;
         Log.d("time1", "==============================================");
         Log.d("time1", "lastTime : " + lastTime);
         Log.d("time1", "==============================================");
-        if (count < timeCheck.size( )) {
+        if (mCountTimeCheck < mCheckTime.size( )) {
             if (lastTime >= 5) {
-                list.remove(0);
-                Log.d("time1", "countCheck : " + count);
-                Log.d("time1", "listSIZE : " + list.size( ));
-                Log.d("time1", "timeCheckSIZE : " + timeCheck.size( ));
-                Log.d("time1", "startTime : " + timeCheck.get(count));
-                Log.d("time1", "endTime : " + endTime);
-                if (count + 1 < timeCheck.size( )) {
-                    count++;
+                mList.remove(0);
+                Log.d("time1", "countCheck : " + mCountTimeCheck);
+                Log.d("time1", "listSIZE : " + mList.size( ));
+                Log.d("time1", "mCheckTimeSIZE : " + mCheckTime.size( ));
+                Log.d("time1", "mStartTime : " + mCheckTime.get(mCountTimeCheck));
+                Log.d("time1", "mEndTime : " + mEndTime);
+                if (mCountTimeCheck + 1 < mCheckTime.size( )) {
+                    mCountTimeCheck++;
                 }
                 Log.d("time1", "===================");
-                Log.d("time1", "nextCountCheck : " + count);
-                Log.d("time1", "timeCheckSIZE : " + timeCheck.size( ));
-                Log.d("time1", "nextStartTime : " + timeCheck.get(count));
-                Log.d("time1", "nextEndTime : " + endTime);
+                Log.d("time1", "nextCountCheck : " + mCountTimeCheck);
+                Log.d("time1", "mCheckTimeSIZE : " + mCheckTime.size( ));
+                Log.d("time1", "nextmStartTime : " + mCheckTime.get(mCountTimeCheck));
+                Log.d("time1", "nextmEndTime : " + mEndTime);
                 Log.d("time1", "checkTime : " + lastTime);
-                adapter.notifyDataSetChanged( );
-                recyclerView.setAdapter(adapter);
+                mAdapter.notifyDataSetChanged( );
+                recyclerView.setAdapter(mAdapter);
             }
         }
-        endTime = SystemClock.elapsedRealtime( );
+        mEndTime = SystemClock.elapsedRealtime( );
     }
 
 ////////////////////////////////////////(A,B지점 지정 )/////////////////////////////////////////////
 
-    Marker start_A = new Marker( );
-    Marker sub_A = new Marker( );
-    Marker start_B = new Marker( );
-    Marker sub_B = new Marker( );
-    PolygonOverlay interval_polygon = new PolygonOverlay( );
-    int interval_count = 0;
-
     //pointA 마커 생성
-    public void interval_PointA(LatLng latLng, double max_Miter, double gap_Number) {
+    public void intervalPointA(LatLng latLng, double maxMeter, double gapMeter) {
 
-        start_A.setPosition(latLng);
-        start_A.setWidth(80);
-        start_A.setHeight(80);
-        start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
-        start_A.setMap(naverMap);
-        pointB(max_Miter, gap_Number);
-        interval_max = max_Miter;
+//        start_A.setPosition(latLng);
+//        start_A.setWidth(80);
+//        start_A.setHeight(80);
+//        start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
+//        start_A.setMap(mMap);
+        
+        mIntervalMarkerAB[0][0].setPosition(latLng);
+        mIntervalMarkerAB[0][0].setWidth(80);
+        mIntervalMarkerAB[0][0].setHeight(80);
+        mIntervalMarkerAB[0][0].setIcon(OverlayImage.fromResource(R.drawable.a_point));
+        mIntervalMarkerAB[0][0].setMap(mMap);
+        pointB(maxMeter, gapMeter);
+        mIntervalMaxMeter = maxMeter;
     }
 
     //pointB 마커 생성
-    public void interval_PointB(LatLng latLng, double max_Miter, double gap_Number) {
+    public void intervalPointB(LatLng latLng, double maxMeter, double gapMeter) {
 
-        if (interval_count == 0) {
-            start_B.setPosition(latLng);
-            start_B.setWidth(80);
-            start_B.setHeight(80);
-            start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
-            start_B.setMap(naverMap);
-            interval(max_Miter);
-            checkMiter(max_Miter,gap_Number);
+        if (mIntervlaCountValue == 0) {
+//            start_B.setPosition(latLng);
+//            start_B.setWidth(80);
+//            start_B.setHeight(80);
+//            start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
+//            start_B.setMap(mMap);
+            mIntervalMarkerAB[1][0].setPosition(latLng);
+            mIntervalMarkerAB[1][0].setWidth(80);
+            mIntervalMarkerAB[1][0].setHeight(80);
+            mIntervalMarkerAB[1][0].setIcon(OverlayImage.fromResource(R.drawable.b_point));
+            mIntervalMarkerAB[1][0].setMap(mMap);
+            interval(maxMeter);
+            checkMeter(maxMeter,gapMeter);
         }
     }
 
     //pointA 생성할 곳 클릭
-    public void pointA(double max_Miter, double gap_Number) {
-        naverMap.setOnMapClickListener((PointF, latLng) ->
-                interval_PointA(latLng, max_Miter, gap_Number)
+    public void pointA(double maxMeter, double gapMeter) {
+        mMap.setOnMapClickListener((PointF, latLng) ->
+                intervalPointA(latLng, maxMeter, gapMeter)
         );
     }
 
     //pointB 생성할 곳 클릭
-    public void pointB(double max_Miter,double gap_Number) {
-        naverMap.setOnMapClickListener((PointF, latLng) ->
-                interval_PointB(latLng, max_Miter, gap_Number)
+    public void pointB(double maxMeter,double gapMeter) {
+        mMap.setOnMapClickListener((PointF, latLng) ->
+                intervalPointB(latLng, maxMeter, gapMeter)
         );
     }
 
     //간격감시 polygon 생성
-    public void interval(double max_Miter) {
+    public void interval(double maxMeter) {
 
-        LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
-        LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
+        LatLong A_latLong = new LatLong(mIntervalMarkerAB[0][0].getPosition( ).latitude, mIntervalMarkerAB[0][0].getPosition( ).longitude);
+        LatLong B_latLong = new LatLong(mIntervalMarkerAB[1][0].getPosition( ).latitude, mIntervalMarkerAB[1][0].getPosition( ).longitude);
         double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
 
-        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90, max_Miter);
-        LatLng position_subA = new LatLng(positionA.getLatitude( ), positionA.getLongitude( ));
-        sub_A.setPosition(position_subA);
-        sub_A.setWidth(80);
-        sub_A.setHeight(80);
-        sub_A.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
-        sub_A.setMap(naverMap);
-        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90, max_Miter);
-        LatLng position_subB = new LatLng(positionB.getLatitude( ), positionB.getLongitude( ));
-        sub_B.setPosition(position_subB);
-        sub_B.setWidth(80);
-        sub_B.setHeight(80);
-        sub_B.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
-        sub_B.setMap(naverMap);
+        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90, maxMeter);
+        LatLng positionSubA = new LatLng(positionA.getLatitude( ), positionA.getLongitude( ));
+        
+        mIntervalMarkerAB[0][1].setPosition(positionSubA);
+        mIntervalMarkerAB[0][1].setWidth(80);
+        mIntervalMarkerAB[0][1].setHeight(80);
+        mIntervalMarkerAB[0][1].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+        mIntervalMarkerAB[0][1].setMap(mMap);
+        
+        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90, maxMeter);
+        LatLng positionSubB = new LatLng(positionB.getLatitude( ), positionB.getLongitude( ));
+        
+        mIntervalMarkerAB[1][1].setPosition(positionSubB);
+        mIntervalMarkerAB[1][1].setWidth(80);
+        mIntervalMarkerAB[1][1].setHeight(80);
+        mIntervalMarkerAB[1][1].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+        mIntervalMarkerAB[1][1].setMap(mMap);
 
-        interval_polygon.setCoords(Arrays.asList(
-                start_A.getPosition( ),
-                sub_A.getPosition( ),
-                sub_B.getPosition( ),
-                start_B.getPosition( )
+        mIntervalPolygon.setCoords(Arrays.asList(
+                mIntervalMarkerAB[0][0].getPosition( ),
+                mIntervalMarkerAB[0][1].getPosition( ),
+                mIntervalMarkerAB[1][1].getPosition( ),
+                mIntervalMarkerAB[1][0].getPosition( )
         ));
-        int color_polygon = Color.parseColor("#59FF0F00");
-        interval_polygon.setColor(color_polygon);
-        Log.d("point_interval", "A_angle : " + start_A.getAngle( ));
-        interval_polygon.setMap(naverMap);
+        mIntervalPolygon.setColor(getColor(R.color.color_interval_polygon));
+        Log.d("point_interval", "A_angle : " + mIntervalMarkerAB[0][0].getAngle( ));
+        mIntervalPolygon.setMap(mMap);
 
-        alertUser("드론 가로길이(m) : " + max_Miter);
+        alertUser(getString(R.string.drone_horizon_longs)+ maxMeter);
 
     }
 
     //다른 모드 버튼 클릭시 간격감시 제거
 
-    public void interval_Disappear() {
+    public void removeInterval() {
 
         //간격감시 제거 후에 맵을 눌렀을 시 나오지 않게 함
-        naverMap.setOnMapClickListener((PointF, latLng) ->
-                disappear(latLng)
+        mMap.setOnMapClickListener((PointF, latLng) ->
+                remove(latLng)
         );
-        disappear(start_A.getPosition( ));
+        remove(mIntervalMarkerAB[0][0].getPosition( ));
     }
 
     //간격감시때 그린 polygone과 polyline을 제거
-    public void disappear(LatLng latLng) {
+    public void remove(LatLng latLng) {
 
-        Button mission_complete = (Button) findViewById(R.id.complete);
+        Button btnMissionComplete = (Button) findViewById(R.id.complete);
 
-        start_A.setMap(null);
-        start_B.setMap(null);
-        sub_A.setMap(null);
-        sub_B.setMap(null);
-        interval_polygon.setMap(null);
-        interval_polyline.setMap(null);
-        count_Miter.clear();
-        interval_count = 0;
-        intervalMission.clear();
+        mIntervalMarkerAB[0][0].setMap(null);
+        mIntervalMarkerAB[1][0].setMap(null);
+        mIntervalMarkerAB[0][1].setMap(null);
+        mIntervalMarkerAB[1][1].setMap(null);
+        mIntervalPolygon.setMap(null);
+        mIntervalPolyline.setMap(null);
+        mCountMeter.clear();
+        mIntervlaCountValue = 0;
+        mIntervalMission.clear();
 
-        mission_complete.setVisibility(View.INVISIBLE);
-        mission_complete.setText("임무전송");
-        alertUser("임무 제거");
+        btnMissionComplete.setVisibility(View.INVISIBLE);
+        btnMissionComplete.setText(getString(R.string.mission_termination));
+        alertUser(getString(R.string.mission_removal));
     }
 
 ////////////////////////////////////(간격 감시 기능)////////////////////////////////////////////////
 
-    ArrayList<LatLng> count_Miter = new ArrayList<>( );
-    PolylineOverlay interval_polyline = new PolylineOverlay( );
 
     //설정 간격에 따른 polyline 그림
-    public void checkMiter(double max_Miter, double check_Miter) {
+    public void checkMeter(double maxMeter, double check_Miter) {
 
-        double Mul_Check = 0;
-        int miterCount = 0;
+        double MulCheck = 0;
+        int MeterCount = 0;
 
-        LatLong A_latLong = new LatLong(start_A.getPosition( ).latitude, start_A.getPosition( ).longitude);
-        LatLong B_latLong = new LatLong(start_B.getPosition( ).latitude, start_B.getPosition( ).longitude);
-        LatLong end_A = new LatLong(sub_A.getPosition().latitude,sub_A.getPosition().longitude);
-        LatLong end_B = new LatLong(sub_B.getPosition().latitude,sub_B.getPosition().longitude);
+        LatLong A_latLong = new LatLong(mIntervalMarkerAB[0][0].getPosition( ).latitude, mIntervalMarkerAB[0][0].getPosition( ).longitude);
+        LatLong B_latLong = new LatLong(mIntervalMarkerAB[1][0].getPosition( ).latitude, mIntervalMarkerAB[1][0].getPosition( ).longitude);
+        LatLong end_A = new LatLong(mIntervalMarkerAB[0][1].getPosition().latitude,mIntervalMarkerAB[0][1].getPosition().longitude);
+        LatLong end_B = new LatLong(mIntervalMarkerAB[1][1].getPosition().latitude,mIntervalMarkerAB[1][1].getPosition().longitude);
 
-        Log.d("miterLatLng","start A : " + start_A.getPosition());
-        Log.d("miterLatLng","start B : " + start_B.getPosition());
+        Log.d("miterLatLng","start A : " + mIntervalMarkerAB[0][0].getPosition());
+        Log.d("miterLatLng","start B : " + mIntervalMarkerAB[1][0].getPosition());
         double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
 
         LatLong startPoint_A;
         LatLong startPoint_B;
 
-        for (int count_CheckMiter = 0; Mul_Check < max_Miter; count_CheckMiter++) {
+        for (int i = 0; MulCheck < maxMeter; i++) {
 
-            Mul_Check = check_Miter * count_CheckMiter;
+            MulCheck = check_Miter * i;
 
-            if ((count_CheckMiter == 0) || (count_CheckMiter % 2 == 0)) {
+            if ((i == 0) || (i % 2 == 0)) {
                 startPoint_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
-                        Mul_Check);
+                        MulCheck);
 
                 startPoint_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
-                        Mul_Check);
+                        MulCheck);
 
                 Collections.addAll(
-                        count_Miter,
+                        mCountMeter,
                         new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )),
                         new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( ))
                 );
-                if (Mul_Check >= max_Miter) {
-                    count_Miter.set(miterCount, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
-                    count_Miter.set(miterCount + 1, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
+                if (MulCheck >= maxMeter) {
+                    mCountMeter.set(MeterCount, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
+                    mCountMeter.set(MeterCount + 1, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
                 }
-                miterCount += 2;
+                MeterCount += 2;
                 Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
                 Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
 
-            } else if (count_CheckMiter % 2 != 0) {
+            } else if (i % 2 != 0) {
                 startPoint_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
-                        Mul_Check);
+                        MulCheck);
 
                 startPoint_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
-                        Mul_Check);
+                        MulCheck);
 
                 Collections.addAll(
-                        count_Miter,
+                        mCountMeter,
                         new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )),
                         new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( ))
                 );
-                if (Mul_Check >= max_Miter) {
-                    count_Miter.set(miterCount, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
-                    count_Miter.set(miterCount + 1, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
+                if (MulCheck >= maxMeter) {
+                    mCountMeter.set(MeterCount, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
+                    mCountMeter.set(MeterCount + 1, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
                 }
-                miterCount += 2;
+                MeterCount += 2;
                 Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
                 Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
             }
         }
         alertUser("드론 간격거리(m) : " + check_Miter);
-        interval_polyline.setCoords(count_Miter);
-        interval_polyline.setMap(naverMap);
-        ++interval_count;
+        mIntervalPolyline.setCoords(mCountMeter);
+        mIntervalPolyline.setMap(mMap);
+        ++mIntervlaCountValue;
 
-        for(int i = 0; i<count_Miter.size(); i++){
-            Log.d("miterLatLng", "count_Miter : " + count_Miter.get(i));
+        for(int i = 0; i<mCountMeter.size(); i++){
+            Log.d("miterLatLng", "mCountMeter : " + mCountMeter.get(i));
         }
-        Log.d("miterLatLng","count_Miter start A : " + count_Miter.get(0));
-        Log.d("miterLatLng","count_Miter start B : " + count_Miter.get(1));
+        Log.d("miterLatLng","mCountMeter start A : " + mCountMeter.get(0));
+        Log.d("miterLatLng","mCountMeter start B : " + mCountMeter.get(1));
     }
 
     //가로길이와 간격거리 설정
@@ -1127,7 +1135,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         builder.setView(dialogView);
 
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener( ) {
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener( ) {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 String MaxNumber = maxNumText.getText().toString();
@@ -1137,7 +1145,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 dialog.cancel();
 
             }
-        }).setNegativeButton("NO", new DialogInterface.OnClickListener( ) {
+        }).setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener( ) {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.cancel();
@@ -1145,104 +1153,104 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         });
 
         AlertDialog alertDialog = builder.create();
-        alertDialog.setTitle("간격감시");
+        alertDialog.setTitle(getString(R.string.interval_monitoring));
         alertDialog.show();
 
     }
 
 //////////////////////////////////(간격감시 모드시 auto모드 작동)///////////////////////////////////
 
-    double interval_max;
+    double mIntervalMaxMeter;
 
-    int index;
-    Mission intervalMission = new Mission();
+    int mIndex;
+    Mission mIntervalMission = new Mission();
 
     //AUTO 모드 변환전 MISSION에 WAYPOINT전송
     public void autoInterval(){
 
 
-        for(index = 0; index<count_Miter.size();index++) {
+        for(mIndex = 0; mIndex<mCountMeter.size();mIndex++) {
             Waypoint intervalWaypoint = new Waypoint();
 
-            intervalWaypoint.setCoordinate(new LatLongAlt(count_Miter.get(index).latitude, count_Miter.get(index).longitude, mRecentAltitude));
+            intervalWaypoint.setCoordinate(new LatLongAlt(mCountMeter.get(mIndex).latitude, mCountMeter.get(mIndex).longitude, mRecentAltitude));
             intervalWaypoint.setDelay(1);
-            intervalMission.addMissionItem(intervalWaypoint);
-            Log.d("interval1","index : " + index);
-            Log.d("interval1","mission : " + intervalMission.getMissionItem(index));
+            mIntervalMission.addMissionItem(intervalWaypoint);
+            Log.d("interval1","mIndex : " + mIndex);
+            Log.d("interval1","mission : " + mIntervalMission.getMissionItem(mIndex));
             Log.d("interval1","wayPoint : " + intervalWaypoint);
         }
-        MissionApi.getApi(this.drone).setMission(intervalMission, true);
+        MissionApi.getApi(this.mDrone).setMission(mIntervalMission, true);
 
     }
 
     //받은 MISSION으로 AUTO모드로 전환
-    public void interval_go(){
+    public void startInterval(){
 
-        VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_AUTO, new SimpleCommandListener( ) {
+        VehicleApi.getApi(this.mDrone).setVehicleMode(VehicleMode.COPTER_AUTO, new SimpleCommandListener( ) {
 
             @Override
             public void onSuccess() {
-                alertUser("임무를 시작합니다.");
+                alertUser(getString(R.string.start_mission));
             }
 
             @Override
             public void onError(int executionError) {
-                alertUser("AUTO 모드로 전환할 수 없습니다.");
+                alertUser(getString(R.string.cannot_change_auto_mode));
             }
 
             @Override
             public void onTimeout() {
-                alertUser("AUTO 모드로 전환할 수 없습니다.");
+                alertUser(getString(R.string.cannot_change_auto_mode));
             }
         });
     }
 
     //AUTO모드를 LOITER로 변환 / 멈춤
-    public void interval_End(){
-        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+    public void stoppedInterval(){
+        State vehicleState = this.mDrone.getAttribute(AttributeType.STATE);
 
         if (vehicleState.getVehicleMode( ) == VehicleMode.COPTER_AUTO) {
-            VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_LOITER, new SimpleCommandListener( ) {
+            VehicleApi.getApi(this.mDrone).setVehicleMode(VehicleMode.COPTER_LOITER, new SimpleCommandListener( ) {
 
                 @Override
                 public void onSuccess() {
-                    alertUser("임무를 중지합니다.");
+                    alertUser(getString(R.string.stop_mission));
                 }
 
                 @Override
                 public void onError(int executionError) {
-                    alertUser("LOITER 모드로 전환할 수 없습니다.");
+                    alertUser(getString(R.string.cannot_change_loiter_mode));
                 }
 
                 @Override
                 public void onTimeout() {
-                    alertUser("LOITER 모드로 전환할 수 없습니다.");
+                    alertUser(getString(R.string.cannot_change_loiter_mode));
                 }
             });
         }
     }
 
     //중지후 재시작시 중지전 전MISSION을 수행
-    public void interval_Restart(){
+    public void restartInterval(){
 
-        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+        State vehicleState = this.mDrone.getAttribute(AttributeType.STATE);
 
         if (vehicleState.getVehicleMode( ) == VehicleMode.COPTER_LOITER) {
-            VehicleApi.getApi(this.drone).setVehicleMode(VehicleMode.COPTER_AUTO, new SimpleCommandListener( ) {
+            VehicleApi.getApi(this.mDrone).setVehicleMode(VehicleMode.COPTER_AUTO, new SimpleCommandListener( ) {
 
                 @Override
                 public void onSuccess() {
-                    alertUser("임무를 재시작 합니다.");
+                    alertUser(getString(R.string.restart_mission));
                 }
 
                 @Override
                 public void onError(int executionError) {
-                    alertUser("AUTO 모드로 전환할 수 없습니다.");
+                    alertUser(getString(R.string.cannot_change_auto_mode));
                 }
 
                 @Override
                 public void onTimeout() {
-                    alertUser("AUTO 모드로 전환할 수 없습니다.");
+                    alertUser(getString(R.string.cannot_change_auto_mode));
                 }
             });
         }
@@ -1251,35 +1259,35 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     //임무 전송 버튼
     public void missionTransmissionButton(){
 
-        Button mission_complete = (Button) findViewById(R.id.complete);
+        Button btnMissionComplete = (Button) findViewById(R.id.complete);
 
-        mission_complete.setOnClickListener(new Button.OnClickListener( ) {
+        btnMissionComplete.setOnClickListener(new Button.OnClickListener( ) {
             @Override
             public void onClick(View v) {
 
-                if (count_Miter.size( ) > 0) {
-                    if (mission_complete.getText( ).equals("임무전송")) {
+                if (mCountMeter.size( ) > 0) {
+                    if (btnMissionComplete.getText( ).equals(getString(R.string.mission_transmission))) {
 
-                        mission_complete.setText("임무시작");
+                        btnMissionComplete.setText(getString(R.string.mission_start));
                         autoInterval( );
-                        alertUser("임무 전송 완료");
+                        alertUser(getString(R.string.complete_transmission_mission));
 
-                    } else if (mission_complete.getText( ).equals("임무시작")) {
+                    } else if (btnMissionComplete.getText( ).equals(getString(R.string.mission_start))) {
 
-                        mission_complete.setText("임무중지");
-                        interval_go( );
-                    } else if (mission_complete.getText( ).equals("임무중지")) {
+                        btnMissionComplete.setText(getString(R.string.mission_stop));
+                        startInterval( );
+                    } else if (btnMissionComplete.getText( ).equals(getString(R.string.mission_stop))) {
 
-                        if (drone_marker.getPosition( ) == count_Miter.get(count_Miter.size( ) - 1)) {
-                            mission_complete.setText("임무전송");
+                        if (mDroneMarker.getPosition( ) == mCountMeter.get(mCountMeter.size( ) - 1)) {
+                            btnMissionComplete.setText(getString(R.string.mission_transmission));
                         } else {
-                            mission_complete.setText("임무재시작");
+                            btnMissionComplete.setText(getString(R.string.mission_restart));
                         }
-                        interval_End( );
-                    } else if (mission_complete.getText( ).equals("임무재시작")) {
+                        stoppedInterval( );
+                    } else if (btnMissionComplete.getText( ).equals(getString(R.string.mission_restart))) {
 
-                        mission_complete.setText("임무중지");
-                        interval_Restart( );
+                        btnMissionComplete.setText(getString(R.string.mission_stop));
+                        restartInterval( );
                     }
 
                 }
@@ -1290,22 +1298,22 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 //////////////////////////////////////////(드론 모드 변경)//////////////////////////////////////////
 
     public void onFlightModeSelected(View view) {
-        VehicleMode vehicleMode = (VehicleMode) this.modeSelector.getSelectedItem( );
+        VehicleMode vehicleMode = (VehicleMode) this.mModeSelector.getSelectedItem( );
 
-        VehicleApi.getApi(this.drone).setVehicleMode(vehicleMode, new AbstractCommandListener( ) {
+        VehicleApi.getApi(this.mDrone).setVehicleMode(vehicleMode, new AbstractCommandListener( ) {
             @Override
             public void onSuccess() {
-                alertUser("드론 모드 변경 성공하였습니다.");
+                alertUser(getString(R.string.complete_change_drone_mode));
             }
 
             @Override
             public void onError(int executionError) {
-                alertUser("드론 모드 변경 실패 : " + executionError);
+                alertUser(getString(R.string.failure_change_drone_mode) + executionError);
             }
 
             @Override
             public void onTimeout() {
-                alertUser("드론 모드 변경 시간 초과되었습니다.");
+                alertUser(getString(R.string.time_out_change_drone_mode));
             }
         });
     }
@@ -1316,14 +1324,14 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         ArrayAdapter<VehicleMode> vehicleModeArrayAdapter = new ArrayAdapter<VehicleMode>(this,
                 android.R.layout.simple_spinner_item, vehicleModes);
         vehicleModeArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        this.modeSelector.setAdapter(vehicleModeArrayAdapter);
+        this.mModeSelector.setAdapter(vehicleModeArrayAdapter);
     }
 
     protected void updateVehicleMode() {
-        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+        State vehicleState = this.mDrone.getAttribute(AttributeType.STATE);
         VehicleMode vehicleMode = vehicleState.getVehicleMode( );
-        ArrayAdapter arrayAdapter = (ArrayAdapter) this.modeSelector.getAdapter( );
-        this.modeSelector.setSelection(arrayAdapter.getPosition(vehicleMode));
+        ArrayAdapter arrayAdapter = (ArrayAdapter) this.mModeSelector.getAdapter( );
+        this.mModeSelector.setSelection(arrayAdapter.getPosition(vehicleMode));
     }
 
 ///////////////////////////////////////////(고도 확인)//////////////////////////////////////////////
@@ -1332,24 +1340,24 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     public void updateAltitude() {
 
-        Altitude currentAltitude = this.drone.getAttribute(AttributeType.ALTITUDE);
+        Altitude currentAltitude = this.mDrone.getAttribute(AttributeType.ALTITUDE);
         mRecentAltitude = currentAltitude.getRelativeAltitude();
         TextView droneAltitude = (TextView) findViewById(R.id.altitude);
         String straltitude = String.format("%.1f",mRecentAltitude);
-        droneAltitude.setText("고도 " + straltitude + "m");
+        droneAltitude.setText(getString(R.string.altitude) + straltitude + getString(R.string.meter_unit));
     }
 
 ///////////////////////////////////////////(YAW값 확인)/////////////////////////////////////////////
 
     public float updateYAW() {
 
-        Attitude attitude = this.drone.getAttribute(AttributeType.ATTITUDE);
+        Attitude attitude = this.mDrone.getAttribute(AttributeType.ATTITUDE);
         TextView droneYaw = (TextView) findViewById(R.id.yaw);
         float angle = (float) attitude.getYaw( );
         if (angle < 0) {
             angle = (float) attitude.getYaw( ) + 360;
         }
-        droneYaw.setText("Yaw " + Math.round(angle) + "deg");
+        droneYaw.setText(getString(R.string.yaw) + Math.round(angle) + getString(R.string.yaw_unit));
         Log.d("yaw", "YAW : " + Math.round(angle));
         return angle;
     }
@@ -1357,9 +1365,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 ///////////////////////////////////////////(위성갯수 확인)//////////////////////////////////////////
 
     public void updateSatellites() {
-        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
+        Gps droneGps = this.mDrone.getAttribute(AttributeType.GPS);
         TextView gps = (TextView) findViewById(R.id.textView);
-        gps.setText("위성 " + droneGps.getSatellitesCount( ));
+        gps.setText(getString(R.string.satellite) + droneGps.getSatellitesCount( ));
         Log.d("check", "위성 : " + droneGps.getSatellitesCount( ));
     }
 
@@ -1367,32 +1375,32 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     public void updateDronePosition() {
 
-        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
+        Gps droneGps = this.mDrone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition( );
         Log.d("position", "드론 위치 : " + vehiclePosition);
 
         float angle = updateYAW( );
 
-        drone_marker.setMap(null);//그 전 마커들 지워줌
-        drone_marker.setPosition(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
-        drone_marker.setAngle(angle); // 드론을 돌리면 yaw값이 변경되며 마커 모양을 변경시켜줌
-        drone_marker.setIcon(OverlayImage.fromResource(R.drawable.next));
-        drone_marker.setWidth(80);
-        drone_marker.setHeight(330);
-        drone_marker.setAnchor(new PointF(0.5F, 0.9F));
-        drone_marker.setMap(naverMap); // 찍히는 좌표마다 marker 표시
+        mDroneMarker.setMap(null);//그 전 마커들 지워줌
+        mDroneMarker.setPosition(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
+        mDroneMarker.setAngle(angle); // 드론을 돌리면 yaw값이 변경되며 마커 모양을 변경시켜줌
+        mDroneMarker.setIcon(OverlayImage.fromResource(R.drawable.next));
+        mDroneMarker.setWidth(80);
+        mDroneMarker.setHeight(330);
+        mDroneMarker.setAnchor(new PointF(0.5F, 0.9F));
+        mDroneMarker.setMap(mMap); // 찍히는 좌표마다 marker 표시
 
         updateMapLock(new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( ))); // 맵 잠금 / 이동 버튼
 
         Collections.addAll(
-                flight_path,
+                mFlightPath,
                 new LatLng(vehiclePosition.getLatitude( ), vehiclePosition.getLongitude( )));
-        drone_polyline.setCoords(flight_path);
-        drone_polyline.setColor(Color.MAGENTA);
-        drone_polyline.setMap(naverMap);
+        mFlightDronePolyline.setCoords(mFlightPath);
+        mFlightDronePolyline.setColor(Color.MAGENTA);
+        mFlightDronePolyline.setMap(mMap);
 
-        naverMap.setLocationSource(locationSource);
-        naverMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
+        mMap.setLocationSource(locationSource);
+        mMap.setLocationTrackingMode(LocationTrackingMode.NoFollow);
 
     }
 
@@ -1400,9 +1408,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     public void onMapReady(@NonNull NaverMap naverMap) {
         ConnectionParameter params = ConnectionParameter.newUdpConnection(null);
 
-        this.drone.connect(params);
+        this.mDrone.connect(params);
 
-        this.naverMap = naverMap;
+        this.mMap = naverMap;
 
         UiSettings uiSettings = naverMap.getUiSettings( );
 

@@ -35,7 +35,7 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:paddingTop="1dp"
-                android:text="@string/Voltage"
+                android:text="@string/voltage"
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp" />
@@ -55,7 +55,7 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:paddingTop="1dp"
-                android:text="@string/Altitude"
+                android:text="@string/altitude"
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp" />
@@ -66,7 +66,7 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:paddingTop="1dp"
-                android:text="@string/Speed"
+                android:text="@string/speed"
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp" />
@@ -77,7 +77,7 @@
                 android:layout_height="30dp"
                 android:layout_weight="1"
                 android:paddingTop="1dp"
-                android:text="@string/Yaw"
+                android:text="@string/yaw"
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp" />
@@ -87,7 +87,7 @@
                 android:layout_width="136dp"
                 android:layout_height="30dp"
                 android:paddingTop="1dp"
-                android:text="@string/textView"
+                android:text="@string/satellite"
                 android:textAlignment="center"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
@@ -109,7 +109,7 @@
         android:onClick="onArmButtonTap"
         android:outlineProvider="paddedBounds"
         android:padding="10dp"
-        android:text="@string/Arm"
+        android:text="@string/arm"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         android:textIsSelectable="false"
@@ -319,7 +319,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
-        android:text="@string/droneMode"
+        android:text="@string/drone_mode"
         android:textAlignment="center"
         app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
         app:layout_constraintStart_toStartOf="@+id/altitude_setting" />
@@ -332,7 +332,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
-        android:text="@string/basicMode"
+        android:text="@string/basic_mode"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
         app:layout_constraintStart_toEndOf="@+id/drone_mode" />
@@ -345,7 +345,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
-        android:text="@string/areaMonitoring"
+        android:text="@string/area_monitoring"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
         app:layout_constraintStart_toEndOf="@+id/intervalMonitoring" />
@@ -358,7 +358,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
-        android:text="@string/flightRoutes"
+        android:text="@string/flight_routes"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
         app:layout_constraintStart_toEndOf="@+id/basicMode" />
@@ -371,7 +371,7 @@
         android:layout_marginBottom="8dp"
         android:background="@drawable/altitude_setting"
         android:padding="9dp"
-        android:text="@string/intervalMonitoring"
+        android:text="@string/interval_monitoring"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/altitude_setting"
         app:layout_constraintStart_toEndOf="@+id/flightRoutes" />
@@ -396,7 +396,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:background="@drawable/round_button_arm"
-        android:text="@string/missionTransmission"
+        android:text="@string/mission_transmission"
         android:textAlignment="center"
         android:textColor="#FFFFFF"
         app:layout_constraintBottom_toTopOf="@+id/buttonTakeoff"

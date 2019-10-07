@@ -2,14 +2,14 @@
     <string name="app_name">MyGCS</string>
     <string name="button_connect">Connect</string>
     <string name="button_disconnect">Disconnect</string>
-    <string name="textView">위성</string>
-    <string name="Voltage">전압</string>
-    <string name="Altitude">고도</string>
-    <string name="Speed">속도</string>
-    <string name="Yaw">YAW</string>
-    <string name="Arm">ARM</string>
-    <string name="TakeOff">TAKE-OFF</string>
-    <string name="Land">LAND</string>
+    <string name="satellite">위성</string>
+    <string name="voltage">전압</string>
+    <string name="altitude">고도</string>
+    <string name="speed">속도</string>
+    <string name="yaw">YAW</string>
+    <string name="arm">ARM</string>
+    <string name="take_off">TAKE-OFF</string>
+    <string name="land">LAND</string>
     <string name="map_locking">맵잠금</string>
     <string name="map_lock">맵잠금</string>
     <string name="map_unlock">맵이동</string>
@@ -21,19 +21,72 @@
     <string name="intellectual_map_off">지적도off</string>
     <string name="intellectual_map_on">지적도on</string>
     <string name="clear">CLEAR</string>
-    <string name="droneMode">일반모드</string>
-    <string name="basicMode">일반모드</string>
-    <string name="flightRoutes">경로비행</string>
-    <string name="intervalMonitoring">간격감시</string>
-    <string name="areaMonitoring">면적감시</string>
-    <string name="missionTransmission">임무전송</string>
-    <string name="missionStart">임무시작</string>
-    <string name="missionTermination">임무종료</string>
-    <string name="interval_Max_Num">총 가로 길이</string>
-    <string name="interval_Gap_Num">간격 감시 거리</string>
+    <string name="drone_mode">일반모드</string>
+    <string name="basic_mode">일반모드</string>
+    <string name="flight_routes">경로비행</string>
+    <string name="interval_monitoring">간격감시</string>
+    <string name="area_monitoring">면적감시</string>
+    <string name="mission_transmission">임무전송</string>
+    <string name="mission_start">임무시작</string>
+    <string name="mission_stop">임무중지</string>
+    <string name="mission_restart">임무재시작</string>
+    <string name="mission_removal">임무제거</string>
+    <string name="mission_termination">임무종료</string>
+    <string name="interval_max_num">총 가로 길이</string>
+    <string name="interval_gap_num">간격 감시 거리</string>
 
-    <!--<string-array name="drone_connection_types">-->
-        <!--<item>USB</item>-->
-        <!--<item>UDP</item>-->
-    <!--</string-array>-->
+    <!-- string message -->
+
+    <string name="start_mainactivity">Start mainActivity</string>
+
+    <string name="not_to_landing">착륙 시킬 수 없습니다.</string>
+    <string name="on_take_off">이륙 중...</string>
+    <string name="cannot_take_off">이룩할 수 없습니다.</string>
+    <string name="have_to_connect_to_drone">먼저 드론과 연결하십시오.</string>
+
+    <string name="cannot_change_althold">alt_hold 모드로 전환할 수 없습니다.</string>
+    <string name="cannot_arming">arming 할 수 없습니다.</string>
+    <string name="time_out_arming">arming 시간이 초과되었습니다.</string>
+
+    <string name="connect_to_drone">드론을 연결했습니다.</string>
+
+    <string name="meter_and_take_off_altitude">m\n이륙고도</string>
+    <string name="meters_per_second">m/s</string>
+    <string name="voltage_unit">v</string>
+    <string name="meter_unit">m</string>
+    <string name="yaw_unit">deg</string>
+
+    <string name="disconnected">연결 실패 : </string>
+    <string name="connected_dronekit_and_android">DroneKit-Android 연결되었습니다.</string>
+    <string name="disconnected_dronekit_and_android">DroneKit-Android 연결이 중단되었습니다.</string>
+    <string name="drone_horizon_longs">드론 가로길이(m) : </string>
+    
+    <string name="complete_change_drone_mode">드론 모드 변경 성공하였습니다.</string>
+    <string name="failure_change_drone_mode">드론 모드 변경 실패 : </string>
+    <string name="time_out_change_drone_mode">드론 모드 변경 시간 초과되었습니다.</string>
+
+    <!-- dialog message -->
+    
+    <string name="set_a_machine">시동을 거시겠습니까?</string>
+    <string name="no">아니오</string>
+    <string name="yes">예</string>
+    
+    <string name="arming">Arming</string>
+    
+        <!-- guide mode message -->
+    
+    <string name="go_to_target">목적지로 향합니다.</string>
+    <string name="cannot_go_target">갈 수 없습니다.</string>
+    <string name="arrived_target">목적지에 도착했습니다.</string>
+    <string name="change_to_guide_mode">가이드모드로 전환하시겠습니까?</string>
+    <string name="guide_mode">가이드모드</string>
+    
+        <!-- mission message -->
+    <string name="start_mission">임무를 시작합니다.</string>
+    <string name="stop_mission">임무를 중지합니다.</string>
+    <string name="restart_mission">임무를 재시작합니다.</string>
+    <string name="cannot_change_auto_mode">AUTO 모드로 전환할 수 없습니다.</string>
+    <string name="cannot_change_loiter_mode">LOITER 모드로 전환할 수 없습니다.</string>
+    <string name="complete_transmission_mission">임무 전송 완료</string>
+
 </resources>
