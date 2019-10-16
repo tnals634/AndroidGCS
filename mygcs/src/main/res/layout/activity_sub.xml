@@ -33,7 +33,7 @@
             android:layout_marginTop="0dp"
             android:layout_marginRight="4dp"
             android:layout_marginBottom="4dp"
-            android:hint="@string/interval_Max_Num"
+            android:hint="@string/interval_max_num"
             android:inputType="text" />
 
         <TextView
@@ -55,7 +55,7 @@
             android:layout_marginTop="0dp"
             android:layout_marginRight="4dp"
             android:layout_marginBottom="16dp"
-            android:hint="@string/interval_Gap_Num"
+            android:hint="@string/interval_gap_num"
             android:inputType="text" />
     </LinearLayout>
 

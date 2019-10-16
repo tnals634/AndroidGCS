@@ -378,14 +378,14 @@
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="300dp"
-        android:layout_height="125dp"
+        android:layout_width="322dp"
+        android:layout_height="100dp"
         android:layout_marginStart="16dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginTop="34dp"
         android:background="#00FFFFFF"
         android:scrollbars="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/flightRoutes"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/frameLayout">
 
     </android.support.v7.widget.RecyclerView>
 

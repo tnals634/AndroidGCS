@@ -99,14 +99,21 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
     private FusedLocationSource locationSource;
 
-    Marker[][] mIntervalMarkerAB = new Marker[2][2];
-    //mIntervalMarkerAB[0][0] = start A, mIntervalMarkerAB[0][1] = sub A, mIntervalMarkerAB[1][0] = start B, mIntervalMarkerAB[1][1] = sub B
+    Marker[] mIntervalMarkerAB = new Marker[4];
+    List<Marker> mListIntervalMarkers = new ArrayList<>();
+    //mIntervalMarkerAB[0] = start A, mIntervalMarkerAB[1] = sub A, mIntervalMarkerAB[2] = start B, mIntervalMarkerAB[3] = sub B
 
     PolygonOverlay mIntervalPolygon = new PolygonOverlay( );
     int mIntervlaCountValue = 0;
     
     ArrayList<LatLng> mCountMeter = new ArrayList<>( );
     PolylineOverlay mIntervalPolyline = new PolylineOverlay( );
+
+
+    double mIntervalMaxMeter;
+
+    int mIndex;
+    Mission mIntervalMission = new Mission();
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -933,12 +940,20 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 //        start_A.setHeight(80);
 //        start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
 //        start_A.setMap(mMap);
-        
-        mIntervalMarkerAB[0][0].setPosition(latLng);
-        mIntervalMarkerAB[0][0].setWidth(80);
-        mIntervalMarkerAB[0][0].setHeight(80);
-        mIntervalMarkerAB[0][0].setIcon(OverlayImage.fromResource(R.drawable.a_point));
-        mIntervalMarkerAB[0][0].setMap(mMap);
+
+        Marker intervalMarker = new Marker();
+
+        intervalMarker.setPosition(latLng);
+        intervalMarker.setWidth(80);
+        intervalMarker.setHeight(80);
+        intervalMarker.setIcon(OverlayImage.fromResource(R.drawable.a_point));
+        mListIntervalMarkers.add(0,intervalMarker);
+        intervalMarker.setMap(mMap);
+//        mIntervalMarkerAB[0].setPosition(latLng);
+//        mIntervalMarkerAB[0].setWidth(80);
+//        mIntervalMarkerAB[0].setHeight(80);
+//        mIntervalMarkerAB[0].setIcon(OverlayImage.fromResource(R.drawable.a_point));
+//        mIntervalMarkerAB[0].setMap(mMap);
         pointB(maxMeter, gapMeter);
         mIntervalMaxMeter = maxMeter;
     }
@@ -946,17 +961,27 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     //pointB 마커 생성
     public void intervalPointB(LatLng latLng, double maxMeter, double gapMeter) {
 
+        Marker intervalMarker = new Marker();
         if (mIntervlaCountValue == 0) {
 //            start_B.setPosition(latLng);
 //            start_B.setWidth(80);
 //            start_B.setHeight(80);
 //            start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
 //            start_B.setMap(mMap);
-            mIntervalMarkerAB[1][0].setPosition(latLng);
-            mIntervalMarkerAB[1][0].setWidth(80);
-            mIntervalMarkerAB[1][0].setHeight(80);
-            mIntervalMarkerAB[1][0].setIcon(OverlayImage.fromResource(R.drawable.b_point));
-            mIntervalMarkerAB[1][0].setMap(mMap);
+
+            intervalMarker.setPosition(latLng);
+            intervalMarker.setWidth(80);
+            intervalMarker.setHeight(80);
+            intervalMarker.setIcon(OverlayImage.fromResource(R.drawable.b_point));
+            mListIntervalMarkers.add(1,intervalMarker);
+            intervalMarker.setMap(mMap);
+
+//            mIntervalMarkerAB[2].setPosition(latLng);
+//            mIntervalMarkerAB[2].setWidth(80);
+//            mIntervalMarkerAB[2].setHeight(80);
+//            mIntervalMarkerAB[2].setIcon(OverlayImage.fromResource(R.drawable.b_point));
+//            mIntervalMarkerAB[2].setMap(mMap);
+
             interval(maxMeter);
             checkMeter(maxMeter,gapMeter);
         }
@@ -979,36 +1004,64 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     //간격감시 polygon 생성
     public void interval(double maxMeter) {
 
-        LatLong A_latLong = new LatLong(mIntervalMarkerAB[0][0].getPosition( ).latitude, mIntervalMarkerAB[0][0].getPosition( ).longitude);
-        LatLong B_latLong = new LatLong(mIntervalMarkerAB[1][0].getPosition( ).latitude, mIntervalMarkerAB[1][0].getPosition( ).longitude);
-        double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
+        Marker intervalMarker1 = new Marker();
+        Marker intervalMarker2 = new Marker();
 
-        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90, maxMeter);
+//        LatLong A_latLong = new LatLong(mIntervalMarkerAB[0].getPosition( ).latitude, mIntervalMarkerAB[0].getPosition( ).longitude);
+//        LatLong B_latLong = new LatLong(mIntervalMarkerAB[2].getPosition( ).latitude, mIntervalMarkerAB[2].getPosition( ).longitude);
+
+        LatLong ALatLong = new LatLong(mListIntervalMarkers.get(0).getPosition().latitude, mListIntervalMarkers.get(0).getPosition().longitude);
+        LatLong BLatLong = new LatLong(mListIntervalMarkers.get(1).getPosition().latitude, mListIntervalMarkers.get(1).getPosition().longitude);
+
+        double degree = MathUtils.getHeadingFromCoordinates(ALatLong,BLatLong);
+
+        LatLong positionA = MathUtils.newCoordFromBearingAndDistance(ALatLong, degree + 90, maxMeter);
         LatLng positionSubA = new LatLng(positionA.getLatitude( ), positionA.getLongitude( ));
         
-        mIntervalMarkerAB[0][1].setPosition(positionSubA);
-        mIntervalMarkerAB[0][1].setWidth(80);
-        mIntervalMarkerAB[0][1].setHeight(80);
-        mIntervalMarkerAB[0][1].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
-        mIntervalMarkerAB[0][1].setMap(mMap);
-        
-        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90, maxMeter);
+//        mIntervalMarkerAB[1].setPosition(positionSubA);
+//        mIntervalMarkerAB[1].setWidth(80);
+//        mIntervalMarkerAB[1].setHeight(80);
+//        mIntervalMarkerAB[1].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+//        mIntervalMarkerAB[1].setMap(mMap);
+
+        intervalMarker1.setPosition(positionSubA);
+        intervalMarker1.setWidth(80);
+        intervalMarker1.setHeight(80);
+        intervalMarker1.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+        intervalMarker1.setMap(mMap);
+
+        mListIntervalMarkers.add(2,intervalMarker1);
+
+
+        LatLong positionB = MathUtils.newCoordFromBearingAndDistance(BLatLong, degree + 90, maxMeter);
         LatLng positionSubB = new LatLng(positionB.getLatitude( ), positionB.getLongitude( ));
         
-        mIntervalMarkerAB[1][1].setPosition(positionSubB);
-        mIntervalMarkerAB[1][1].setWidth(80);
-        mIntervalMarkerAB[1][1].setHeight(80);
-        mIntervalMarkerAB[1][1].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
-        mIntervalMarkerAB[1][1].setMap(mMap);
+//        mIntervalMarkerAB[3].setPosition(positionSubB);
+//        mIntervalMarkerAB[3].setWidth(80);
+//        mIntervalMarkerAB[3].setHeight(80);
+//        mIntervalMarkerAB[3].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+//        mIntervalMarkerAB[3].setMap(mMap);
 
+        intervalMarker2.setPosition(positionSubB);
+        intervalMarker2.setWidth(80);
+        intervalMarker2.setHeight(80);
+        intervalMarker2.setIcon(OverlayImage.fromResource(R.drawable.sub_point));
+        intervalMarker2.setMap(mMap);
+
+        mListIntervalMarkers.add(3,intervalMarker2);
+
+        for(int i = 0; i < 4; i++)
+        {
+            mListIntervalMarkers.get(i).setMap(mMap);
+        }
         mIntervalPolygon.setCoords(Arrays.asList(
-                mIntervalMarkerAB[0][0].getPosition( ),
-                mIntervalMarkerAB[0][1].getPosition( ),
-                mIntervalMarkerAB[1][1].getPosition( ),
-                mIntervalMarkerAB[1][0].getPosition( )
+                mListIntervalMarkers.get(0).getPosition( ),
+                mListIntervalMarkers.get(2).getPosition( ),
+                mListIntervalMarkers.get(3).getPosition( ),
+                mListIntervalMarkers.get(1).getPosition( )
         ));
         mIntervalPolygon.setColor(getColor(R.color.color_interval_polygon));
-        Log.d("point_interval", "A_angle : " + mIntervalMarkerAB[0][0].getAngle( ));
+        Log.d("point_interval", "A_angle : " + mListIntervalMarkers.get(0).getAngle( ));
         mIntervalPolygon.setMap(mMap);
 
         alertUser(getString(R.string.drone_horizon_longs)+ maxMeter);
@@ -1023,7 +1076,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         mMap.setOnMapClickListener((PointF, latLng) ->
                 remove(latLng)
         );
-        remove(mIntervalMarkerAB[0][0].getPosition( ));
+        remove(mListIntervalMarkers.get(0).getPosition( ));
     }
 
     //간격감시때 그린 polygone과 polyline을 제거
@@ -1031,10 +1084,10 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         Button btnMissionComplete = (Button) findViewById(R.id.complete);
 
-        mIntervalMarkerAB[0][0].setMap(null);
-        mIntervalMarkerAB[1][0].setMap(null);
-        mIntervalMarkerAB[0][1].setMap(null);
-        mIntervalMarkerAB[1][1].setMap(null);
+        mListIntervalMarkers.get(0).setMap(null);
+        mListIntervalMarkers.get(2).setMap(null);
+        mListIntervalMarkers.get(1).setMap(null);
+        mListIntervalMarkers.get(3).setMap(null);
         mIntervalPolygon.setMap(null);
         mIntervalPolyline.setMap(null);
         mCountMeter.clear();
@@ -1055,13 +1108,18 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         double MulCheck = 0;
         int MeterCount = 0;
 
-        LatLong A_latLong = new LatLong(mIntervalMarkerAB[0][0].getPosition( ).latitude, mIntervalMarkerAB[0][0].getPosition( ).longitude);
-        LatLong B_latLong = new LatLong(mIntervalMarkerAB[1][0].getPosition( ).latitude, mIntervalMarkerAB[1][0].getPosition( ).longitude);
-        LatLong end_A = new LatLong(mIntervalMarkerAB[0][1].getPosition().latitude,mIntervalMarkerAB[0][1].getPosition().longitude);
-        LatLong end_B = new LatLong(mIntervalMarkerAB[1][1].getPosition().latitude,mIntervalMarkerAB[1][1].getPosition().longitude);
+        LatLong A_latLong = new LatLong(mListIntervalMarkers.get(0).getPosition( ).latitude, mListIntervalMarkers.get(0).getPosition( ).longitude);
+        LatLong B_latLong = new LatLong(mListIntervalMarkers.get(1).getPosition( ).latitude, mListIntervalMarkers.get(1).getPosition( ).longitude);
+        LatLong end_A = new LatLong(mListIntervalMarkers.get(2).getPosition().latitude,mListIntervalMarkers.get(2).getPosition().longitude);
+        LatLong end_B = new LatLong(mListIntervalMarkers.get(3).getPosition().latitude,mListIntervalMarkers.get(3).getPosition().longitude);
 
-        Log.d("miterLatLng","start A : " + mIntervalMarkerAB[0][0].getPosition());
-        Log.d("miterLatLng","start B : " + mIntervalMarkerAB[1][0].getPosition());
+        for(int i = 0; i < 4; i++)
+        {
+            mListIntervalMarkers.get(i).setMap(mMap);
+        }
+
+        Log.d("miterLatLng","start A : " + mListIntervalMarkers.get(0).getPosition());
+        Log.d("miterLatLng","start B : " + mListIntervalMarkers.get(1).getPosition());
         double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
 
         LatLong startPoint_A;
@@ -1159,11 +1217,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     }
 
 //////////////////////////////////(간격감시 모드시 auto모드 작동)///////////////////////////////////
-
-    double mIntervalMaxMeter;
-
-    int mIndex;
-    Mission mIntervalMission = new Mission();
 
     //AUTO 모드 변환전 MISSION에 WAYPOINT전송
     public void autoInterval(){
