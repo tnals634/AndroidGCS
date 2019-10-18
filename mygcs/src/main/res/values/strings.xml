@@ -60,6 +60,7 @@
     <string name="connected_dronekit_and_android">DroneKit-Android 연결되었습니다.</string>
     <string name="disconnected_dronekit_and_android">DroneKit-Android 연결이 중단되었습니다.</string>
     <string name="drone_horizon_longs">드론 가로길이(m) : </string>
+    <string name="drone_gap_longs">드론 간격거리(m) : </string>
     
     <string name="complete_change_drone_mode">드론 모드 변경 성공하였습니다.</string>
     <string name="failure_change_drone_mode">드론 모드 변경 실패 : </string>
@@ -88,5 +89,34 @@
     <string name="cannot_change_auto_mode">AUTO 모드로 전환할 수 없습니다.</string>
     <string name="cannot_change_loiter_mode">LOITER 모드로 전환할 수 없습니다.</string>
     <string name="complete_transmission_mission">임무 전송 완료</string>
+
+    <!-- Log message -->
+    <string name="value">값 : </string>
+    <string name="guide_marker_distance_from_target">gMarker.distanceTo(dMarker); : </string>
+    <string name="battery">배터리</string>
+    <string name="a_phonogram"> ♬ </string>
+    <string name="discontinuation_line">========================================</string>
+    <string name="last_time">last time : </string>
+    <string name="count_check">count Check : </string>
+    <string name="list_size">list Size : </string>
+    <string name="check_time_size">mCheckTimeSize : </string>
+    <string name="start_time">start Time : </string>
+    <string name="end_time">end Time : </string>
+    <string name="next_count_check">next Count Check : </string>
+    <string name="next_start_time">next Start Time : </string>
+    <string name="next_end_time">next End Time : </string>
+    <string name="angle_a">A_angle : </string>
+    <string name="start_interval_marker_a">start A : </string>
+    <string name="start_interval_marker_b">start B : </string>
+    <string name="interval_marker_point_a">point A : </string>
+    <string name="interval_marker_point_b">point B : </string>
+    <string name="count_interval_meter">mCountMeter : </string>
+    <string name="count_interval_meter_start_a">mCountMeter Start A : </string>
+    <string name="count_interval_meter_start_b">mCountMeter Start B : </string>
+    <string name="interval_check_point_a">Check point A</string>
+    <string name="interval_index">interval index : </string>
+    <string name="interval_mission">interval mission : </string>
+    <string name="interval_way_point">interval wayPoint : </string>
+    <string name="drone_position">드론 위치 : </string>
 
 </resources>

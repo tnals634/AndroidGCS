@@ -26,7 +26,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.internal.GetServiceRequest;
+import com.example.mygcs.Message.LogTag;
 import com.naver.maps.geometry.LatLng;
 import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
@@ -99,9 +99,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
     private FusedLocationSource locationSource;
 
-    Marker[] mIntervalMarkerAB = new Marker[4];
     List<Marker> mListIntervalMarkers = new ArrayList<>();
-    //mIntervalMarkerAB[0] = start A, mIntervalMarkerAB[1] = sub A, mIntervalMarkerAB[2] = start B, mIntervalMarkerAB[3] = sub B
+    //mListIntervalMarkers.get(0) = startA, mListIntervalMarkers.get(1) = startB
+    //mListIntervalMarkers.get(2) = subA, mListIntervalMarkers.get(3) = subB
 
     PolygonOverlay mIntervalPolygon = new PolygonOverlay( );
     int mIntervlaCountValue = 0;
@@ -114,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
     int mIndex;
     Mission mIntervalMission = new Mission();
+
+    LogTag mLogTag = new LogTag();
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -220,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 }
 
             });
-            Log.d("altitude_drone", "값 : " + mDroneAltitudeValue);
+            Log.d(mLogTag.DRONE_ALTITUDE_VALUE,getString(R.string.value) + mDroneAltitudeValue);
         } else if (!vehicleState.isConnected( )) {
             // Connect
             alertUser(getString(R.string.have_to_connect_to_drone));
@@ -327,7 +329,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                         alertUser(getString(R.string.cannot_go_target));
                     }
                 });
-        Log.d("guide", "guidePosition : " + new LatLong(latLng.latitude, latLng.longitude));
+        Log.d(mLogTag.GUIDED_STATE,getString(R.string.value) + new LatLong(latLng.latitude, latLng.longitude));
     }
 
     public void updateDistanceFromTarget() {
@@ -338,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         if (btween <= 1) {
             Toast.makeText(this, getString(R.string.arrived_target), Toast.LENGTH_SHORT).show( );
         }
-        Log.d("guide", "gMarker.distanceTo(dMarker); : " + gMarker.distanceTo(dMarker));
+        Log.d(mLogTag.GUIDED_STATE,getString(R.string.guide_marker_distance_from_target) + gMarker.distanceTo(dMarker));
     }
 
     public void guideModeDialog(PointF point, LatLng latlng) {
@@ -821,8 +823,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Speed speed = this.mDrone.getAttribute(AttributeType.SPEED);
         TextView droneSpeed = (TextView) findViewById(R.id.speed);
         droneSpeed.setText(getString(R.string.speed) + Math.round(speed.getGroundSpeed( )) + getString(R.string.meters_per_second));
-        Log.d("speed", "속도  " + Math.round(speed.getGroundSpeed( )) + "m/s");
-
+        Log.d(mLogTag.DRONE_SPEED, getString(R.string.speed) + Math.round(speed.getGroundSpeed( )) + getString(R.string.meters_per_second));
     }
 
 ///////////////////////////////////////////(배터리 확인)////////////////////////////////////////////
@@ -833,7 +834,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         TextView droneBattery = (TextView) findViewById(R.id.voltage);
         String strBattery = String.format("%.1f", battery.getBatteryVoltage( ));
         droneBattery.setText(getString(R.string.voltage) + strBattery + getString(R.string.voltage_unit));
-        Log.d("battery", "배터리1 " + strBattery);
+        Log.d(mLogTag.DRONE_BATTERY, getString(R.string.battery) + strBattery);
 
     }
 
@@ -884,7 +885,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         Toast.makeText(getApplicationContext( ), message, Toast.LENGTH_SHORT).show( );
         Log.d(TAG, message);
-        mList.add(" ♬ " + message + " ");
+        mList.add(getString(R.string.a_phonogram) + message + " ");
         mStartTime = SystemClock.elapsedRealtime( );
         mCheckTime.add(mStartTime);
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
@@ -903,26 +904,34 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         double lastTime = (mEndTime - mCheckTime.get(mCountTimeCheck)) / 1000.0;
-        Log.d("time1", "==============================================");
-        Log.d("time1", "lastTime : " + lastTime);
-        Log.d("time1", "==============================================");
+
+        Log.d(mLogTag.DRONE_REAL_TIME,getString(R.string.discontinuation_line));
+        Log.d(mLogTag.DRONE_REAL_TIME,getString(R.string.last_time) + lastTime);
+        Log.d(mLogTag.DRONE_REAL_TIME,getString(R.string.discontinuation_line));
+
         if (mCountTimeCheck < mCheckTime.size( )) {
+
             if (lastTime >= 5) {
+
                 mList.remove(0);
-                Log.d("time1", "countCheck : " + mCountTimeCheck);
-                Log.d("time1", "listSIZE : " + mList.size( ));
-                Log.d("time1", "mCheckTimeSIZE : " + mCheckTime.size( ));
-                Log.d("time1", "mStartTime : " + mCheckTime.get(mCountTimeCheck));
-                Log.d("time1", "mEndTime : " + mEndTime);
+
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.count_check) + mCountTimeCheck);
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.list_size) + mList.size());
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.check_time_size) + mCheckTime.size());
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.start_time) + mCheckTime.get(mCountTimeCheck));
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.end_time) + mEndTime);
+
                 if (mCountTimeCheck + 1 < mCheckTime.size( )) {
                     mCountTimeCheck++;
                 }
-                Log.d("time1", "===================");
-                Log.d("time1", "nextCountCheck : " + mCountTimeCheck);
-                Log.d("time1", "mCheckTimeSIZE : " + mCheckTime.size( ));
-                Log.d("time1", "nextmStartTime : " + mCheckTime.get(mCountTimeCheck));
-                Log.d("time1", "nextmEndTime : " + mEndTime);
-                Log.d("time1", "checkTime : " + lastTime);
+
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.discontinuation_line));
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.next_count_check) + mCountTimeCheck);
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.check_time_size) + mCheckTime.size());
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.next_start_time) + mCheckTime.get(mCountTimeCheck));
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.next_end_time) + mEndTime);
+                Log.d(mLogTag.DRONE_REAL_TIME, getString(R.string.last_time) + lastTime);
+
                 mAdapter.notifyDataSetChanged( );
                 recyclerView.setAdapter(mAdapter);
             }
@@ -935,12 +944,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
     //pointA 마커 생성
     public void intervalPointA(LatLng latLng, double maxMeter, double gapMeter) {
 
-//        start_A.setPosition(latLng);
-//        start_A.setWidth(80);
-//        start_A.setHeight(80);
-//        start_A.setIcon(OverlayImage.fromResource(R.drawable.a_point));
-//        start_A.setMap(mMap);
-
         Marker intervalMarker = new Marker();
 
         intervalMarker.setPosition(latLng);
@@ -949,11 +952,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         intervalMarker.setIcon(OverlayImage.fromResource(R.drawable.a_point));
         mListIntervalMarkers.add(0,intervalMarker);
         intervalMarker.setMap(mMap);
-//        mIntervalMarkerAB[0].setPosition(latLng);
-//        mIntervalMarkerAB[0].setWidth(80);
-//        mIntervalMarkerAB[0].setHeight(80);
-//        mIntervalMarkerAB[0].setIcon(OverlayImage.fromResource(R.drawable.a_point));
-//        mIntervalMarkerAB[0].setMap(mMap);
+        
         pointB(maxMeter, gapMeter);
         mIntervalMaxMeter = maxMeter;
     }
@@ -963,11 +962,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         Marker intervalMarker = new Marker();
         if (mIntervlaCountValue == 0) {
-//            start_B.setPosition(latLng);
-//            start_B.setWidth(80);
-//            start_B.setHeight(80);
-//            start_B.setIcon(OverlayImage.fromResource(R.drawable.b_point));
-//            start_B.setMap(mMap);
 
             intervalMarker.setPosition(latLng);
             intervalMarker.setWidth(80);
@@ -975,12 +969,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             intervalMarker.setIcon(OverlayImage.fromResource(R.drawable.b_point));
             mListIntervalMarkers.add(1,intervalMarker);
             intervalMarker.setMap(mMap);
-
-//            mIntervalMarkerAB[2].setPosition(latLng);
-//            mIntervalMarkerAB[2].setWidth(80);
-//            mIntervalMarkerAB[2].setHeight(80);
-//            mIntervalMarkerAB[2].setIcon(OverlayImage.fromResource(R.drawable.b_point));
-//            mIntervalMarkerAB[2].setMap(mMap);
 
             interval(maxMeter);
             checkMeter(maxMeter,gapMeter);
@@ -1007,9 +995,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Marker intervalMarker1 = new Marker();
         Marker intervalMarker2 = new Marker();
 
-//        LatLong A_latLong = new LatLong(mIntervalMarkerAB[0].getPosition( ).latitude, mIntervalMarkerAB[0].getPosition( ).longitude);
-//        LatLong B_latLong = new LatLong(mIntervalMarkerAB[2].getPosition( ).latitude, mIntervalMarkerAB[2].getPosition( ).longitude);
-
         LatLong ALatLong = new LatLong(mListIntervalMarkers.get(0).getPosition().latitude, mListIntervalMarkers.get(0).getPosition().longitude);
         LatLong BLatLong = new LatLong(mListIntervalMarkers.get(1).getPosition().latitude, mListIntervalMarkers.get(1).getPosition().longitude);
 
@@ -1018,12 +1003,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         LatLong positionA = MathUtils.newCoordFromBearingAndDistance(ALatLong, degree + 90, maxMeter);
         LatLng positionSubA = new LatLng(positionA.getLatitude( ), positionA.getLongitude( ));
         
-//        mIntervalMarkerAB[1].setPosition(positionSubA);
-//        mIntervalMarkerAB[1].setWidth(80);
-//        mIntervalMarkerAB[1].setHeight(80);
-//        mIntervalMarkerAB[1].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
-//        mIntervalMarkerAB[1].setMap(mMap);
-
         intervalMarker1.setPosition(positionSubA);
         intervalMarker1.setWidth(80);
         intervalMarker1.setHeight(80);
@@ -1035,12 +1014,6 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         LatLong positionB = MathUtils.newCoordFromBearingAndDistance(BLatLong, degree + 90, maxMeter);
         LatLng positionSubB = new LatLng(positionB.getLatitude( ), positionB.getLongitude( ));
-        
-//        mIntervalMarkerAB[3].setPosition(positionSubB);
-//        mIntervalMarkerAB[3].setWidth(80);
-//        mIntervalMarkerAB[3].setHeight(80);
-//        mIntervalMarkerAB[3].setIcon(OverlayImage.fromResource(R.drawable.sub_point));
-//        mIntervalMarkerAB[3].setMap(mMap);
 
         intervalMarker2.setPosition(positionSubB);
         intervalMarker2.setWidth(80);
@@ -1061,7 +1034,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 mListIntervalMarkers.get(1).getPosition( )
         ));
         mIntervalPolygon.setColor(getColor(R.color.color_interval_polygon));
-        Log.d("point_interval", "A_angle : " + mListIntervalMarkers.get(0).getAngle( ));
+        Log.d(mLogTag.INTERVAL_POINT, getString(R.string.angle_a) + mListIntervalMarkers.get(0).getAngle());
         mIntervalPolygon.setMap(mMap);
 
         alertUser(getString(R.string.drone_horizon_longs)+ maxMeter);
@@ -1108,78 +1081,77 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         double MulCheck = 0;
         int MeterCount = 0;
 
-        LatLong A_latLong = new LatLong(mListIntervalMarkers.get(0).getPosition( ).latitude, mListIntervalMarkers.get(0).getPosition( ).longitude);
-        LatLong B_latLong = new LatLong(mListIntervalMarkers.get(1).getPosition( ).latitude, mListIntervalMarkers.get(1).getPosition( ).longitude);
-        LatLong end_A = new LatLong(mListIntervalMarkers.get(2).getPosition().latitude,mListIntervalMarkers.get(2).getPosition().longitude);
-        LatLong end_B = new LatLong(mListIntervalMarkers.get(3).getPosition().latitude,mListIntervalMarkers.get(3).getPosition().longitude);
+        LatLong latLongStartA = new LatLong(mListIntervalMarkers.get(0).getPosition( ).latitude, mListIntervalMarkers.get(0).getPosition( ).longitude);
+        LatLong latLongStartB = new LatLong(mListIntervalMarkers.get(1).getPosition( ).latitude, mListIntervalMarkers.get(1).getPosition( ).longitude);
+        LatLong latLongEndA = new LatLong(mListIntervalMarkers.get(2).getPosition().latitude,mListIntervalMarkers.get(2).getPosition().longitude);
+        LatLong latLongEndB = new LatLong(mListIntervalMarkers.get(3).getPosition().latitude,mListIntervalMarkers.get(3).getPosition().longitude);
 
         for(int i = 0; i < 4; i++)
         {
             mListIntervalMarkers.get(i).setMap(mMap);
         }
 
-        Log.d("miterLatLng","start A : " + mListIntervalMarkers.get(0).getPosition());
-        Log.d("miterLatLng","start B : " + mListIntervalMarkers.get(1).getPosition());
-        double degree = MathUtils.getHeadingFromCoordinates(A_latLong, B_latLong);
+        Log.d(mLogTag.LATLNG_METER, getString(R.string.start_interval_marker_a) + mListIntervalMarkers.get(0).getPosition());
+        Log.d(mLogTag.LATLNG_METER,getString(R.string.start_interval_marker_b) + mListIntervalMarkers.get(1).getPosition());
+        double degree = MathUtils.getHeadingFromCoordinates(latLongStartA, latLongStartB);
 
-        LatLong startPoint_A;
-        LatLong startPoint_B;
+        LatLong startPointA;
+        LatLong startPointB;
 
         for (int i = 0; MulCheck < maxMeter; i++) {
 
             MulCheck = check_Miter * i;
 
             if ((i == 0) || (i % 2 == 0)) {
-                startPoint_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
+                startPointA = MathUtils.newCoordFromBearingAndDistance(latLongStartA, degree + 90,
                         MulCheck);
 
-                startPoint_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
+                startPointB = MathUtils.newCoordFromBearingAndDistance(latLongStartB, degree + 90,
                         MulCheck);
 
                 Collections.addAll(
                         mCountMeter,
-                        new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )),
-                        new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( ))
+                        new LatLng(startPointA.getLatitude( ), startPointA.getLongitude( )),
+                        new LatLng(startPointB.getLatitude( ), startPointB.getLongitude( ))
                 );
                 if (MulCheck >= maxMeter) {
-                    mCountMeter.set(MeterCount, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
-                    mCountMeter.set(MeterCount + 1, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
+                    mCountMeter.set(MeterCount, new LatLng(latLongEndA.getLatitude( ), latLongEndA.getLongitude( )));
+                    mCountMeter.set(MeterCount + 1, new LatLng(latLongEndB.getLatitude( ), latLongEndB.getLongitude( )));
                 }
                 MeterCount += 2;
-                Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
-                Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
-
+                Log.d(mLogTag.METER,getString(R.string.interval_marker_point_a) + new LatLng(startPointA.getLatitude( ), startPointA.getLongitude( )));
+                Log.d(mLogTag.METER, getString(R.string.interval_marker_point_b) + new LatLng(startPointB.getLatitude( ), startPointB.getLongitude( )));
             } else if (i % 2 != 0) {
-                startPoint_A = MathUtils.newCoordFromBearingAndDistance(A_latLong, degree + 90,
+                startPointA = MathUtils.newCoordFromBearingAndDistance(latLongStartA, degree + 90,
                         MulCheck);
 
-                startPoint_B = MathUtils.newCoordFromBearingAndDistance(B_latLong, degree + 90,
+                startPointB = MathUtils.newCoordFromBearingAndDistance(latLongStartB, degree + 90,
                         MulCheck);
 
                 Collections.addAll(
                         mCountMeter,
-                        new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )),
-                        new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( ))
+                        new LatLng(startPointB.getLatitude( ), startPointB.getLongitude( )),
+                        new LatLng(startPointA.getLatitude( ), startPointA.getLongitude( ))
                 );
                 if (MulCheck >= maxMeter) {
-                    mCountMeter.set(MeterCount, new LatLng(end_B.getLatitude( ), end_B.getLongitude( )));
-                    mCountMeter.set(MeterCount + 1, new LatLng(end_A.getLatitude( ), end_A.getLongitude( )));
+                    mCountMeter.set(MeterCount, new LatLng(latLongEndB.getLatitude( ), latLongEndB.getLongitude( )));
+                    mCountMeter.set(MeterCount + 1, new LatLng(latLongEndA.getLatitude( ), latLongEndA.getLongitude( )));
                 }
                 MeterCount += 2;
-                Log.d("miter1", "pointB : " + new LatLng(startPoint_B.getLatitude( ), startPoint_B.getLongitude( )));
-                Log.d("miter1", "pointA : " + new LatLng(startPoint_A.getLatitude( ), startPoint_A.getLongitude( )));
+                Log.d(mLogTag.METER, getString(R.string.interval_marker_point_b) + new LatLng(startPointB.getLatitude( ), startPointB.getLongitude( )));
+                Log.d(mLogTag.METER, getString(R.string.interval_marker_point_a) + new LatLng(startPointA.getLatitude( ), startPointA.getLongitude( )));
             }
         }
-        alertUser("드론 간격거리(m) : " + check_Miter);
+        alertUser(getString(R.string.drone_gap_longs) + check_Miter);
         mIntervalPolyline.setCoords(mCountMeter);
         mIntervalPolyline.setMap(mMap);
         ++mIntervlaCountValue;
 
         for(int i = 0; i<mCountMeter.size(); i++){
-            Log.d("miterLatLng", "mCountMeter : " + mCountMeter.get(i));
+            Log.d(mLogTag.LATLNG_METER, getString(R.string.count_interval_meter) + mCountMeter.get(i));
         }
-        Log.d("miterLatLng","mCountMeter start A : " + mCountMeter.get(0));
-        Log.d("miterLatLng","mCountMeter start B : " + mCountMeter.get(1));
+        Log.d(mLogTag.LATLNG_METER,getString(R.string.count_interval_meter_start_a) + mCountMeter.get(0));
+        Log.d(mLogTag.LATLNG_METER, getString(R.string.count_interval_meter_start_b) + mCountMeter.get(1));
     }
 
     //가로길이와 간격거리 설정
@@ -1199,7 +1171,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
                 String MaxNumber = maxNumText.getText().toString();
                 String GapNumber = gapNumText.getText().toString();
                 pointA(Double.parseDouble(MaxNumber), Double.parseDouble(GapNumber));
-                Log.d("number1","pointA Check");
+                Log.d(mLogTag.INTERVAL_POINT_CHECK,getString(R.string.interval_check_point_a));
                 dialog.cancel();
 
             }
@@ -1228,9 +1200,9 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             intervalWaypoint.setCoordinate(new LatLongAlt(mCountMeter.get(mIndex).latitude, mCountMeter.get(mIndex).longitude, mRecentAltitude));
             intervalWaypoint.setDelay(1);
             mIntervalMission.addMissionItem(intervalWaypoint);
-            Log.d("interval1","mIndex : " + mIndex);
-            Log.d("interval1","mission : " + mIntervalMission.getMissionItem(mIndex));
-            Log.d("interval1","wayPoint : " + intervalWaypoint);
+            Log.d(mLogTag.INTERVAL_STATE_CHECK, getString(R.string.interval_index) + mIndex);
+            Log.d(mLogTag.INTERVAL_STATE_CHECK, getString(R.string.interval_mission) + mIntervalMission.getMissionItem(mIndex));
+            Log.d(mLogTag.INTERVAL_STATE_CHECK, getString(R.string.interval_way_point) + intervalWaypoint);
         }
         MissionApi.getApi(this.mDrone).setMission(mIntervalMission, true);
 
@@ -1411,7 +1383,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
             angle = (float) attitude.getYaw( ) + 360;
         }
         droneYaw.setText(getString(R.string.yaw) + Math.round(angle) + getString(R.string.yaw_unit));
-        Log.d("yaw", "YAW : " + Math.round(angle));
+        Log.d(mLogTag.YAW,getString(R.string.yaw) + Math.round(angle));
         return angle;
     }
 
@@ -1421,7 +1393,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
         Gps droneGps = this.mDrone.getAttribute(AttributeType.GPS);
         TextView gps = (TextView) findViewById(R.id.textView);
         gps.setText(getString(R.string.satellite) + droneGps.getSatellitesCount( ));
-        Log.d("check", "위성 : " + droneGps.getSatellitesCount( ));
+        Log.d(mLogTag.SATELLITE,getString(R.string.satellite) + droneGps.getSatellitesCount());
     }
 
 ///////////////////////////////////////////(실시간 드론위치)////////////////////////////////////////
@@ -1430,7 +1402,7 @@ public class MainActivity extends AppCompatActivity implements DroneListener, To
 
         Gps droneGps = this.mDrone.getAttribute(AttributeType.GPS);
         LatLong vehiclePosition = droneGps.getPosition( );
-        Log.d("position", "드론 위치 : " + vehiclePosition);
+        Log.d(mLogTag.DRONE_POSITION,getString(R.string.drone_position) + vehiclePosition);
 
         float angle = updateYAW( );
 
